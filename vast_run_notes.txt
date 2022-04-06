@@ -1,0 +1,36 @@
+VAST errors
+
+### error received with default settings
+# Check bounds for the following parameters:
+#   Param starting_value     Lower       MLE     Upper final_gradient
+# 28 logkappa2     -0.1053605 -6.400635 -3.067245 -3.067245  -5.589686e-08
+# 
+# The following parameters appear to be approaching zero:
+#   Param starting_value Lower           MLE Upper final_gradient
+# 13   L_omega1_z              1  -Inf -4.647119e-07   Inf  -9.270264e-04
+# settings$FieldConfig[1,1]=0
+# 14 L_epsilon1_z              1  -Inf  1.265076e-06   Inf   2.769764e-03
+# settings$FieldConfig[2,1]=0
+# 26   L_omega2_z              1  -Inf -3.148200e-07   Inf  -1.587578e-06
+# settings$FieldConfig[1,2]=0
+# 27 L_epsilon2_z              1  -Inf -9.276840e-05   Inf  -3.204037e-04
+# settings$FieldConfig[2,2]=0
+# Please turn off factor-model variance parameters `L_` that are approaching zero and re-run the model
+
+# Error: Please change model structure to avoid problems with parameter estimates and then re-try; see details in `?check_fit`
+
+
+### error received (2022/03/30)
+# The following parameters appear to be approaching zero:
+#   Param starting_value Lower           MLE Upper final_gradient
+# 27 L_epsilon2_z              1  -Inf -1.361089e-06   Inf  -0.0006648674
+# settings$FieldConfig[2,2]=0
+# Please turn off factor-model variance parameters `L_` that are approaching zero and re-run the model
+
+# Error: Please change model structure to avoid problems with parameter estimates and then re-try; see details in `?check_fit`
+
+
+### warning recieved (2022/03031)
+# Check bounds for the following parameters:
+    # Param starting_value     Lower       MLE     Upper final_gradient
+# 28 logkappa2     -0.1053605 -5.476512 -2.108411 -2.108411     -0.2129862
