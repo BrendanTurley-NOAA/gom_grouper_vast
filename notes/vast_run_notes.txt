@@ -30,7 +30,9 @@ VAST errors
 # Error: Please change model structure to avoid problems with parameter estimates and then re-try; see details in `?check_fit`
 
 
-### warning recieved (2022/03/31)
+### error recieved (2022/03/31 & 2022/04/06)
 # Check bounds for the following parameters:
     # Param starting_value     Lower       MLE     Upper final_gradient
 # 28 logkappa2     -0.1053605 -5.476512 -2.108411 -2.108411     -0.2129862
+# https://github.com/James-Thorson-NOAA/VAST/issues/300
+Jim Thorson recommends increasing the numer of knots because Kappa is the decorrelation length; it is likely that decorrelation is happening quickly so more knots might fix this.

@@ -36,14 +36,13 @@ region <- read.csv('region.csv')
 
 ### ----------------- VAST modeling -----------------
 # Make settings (turning off bias.correct to save time for example)
-settings = make_settings(n_x = 100, 
+settings = make_settings(n_x = 300, # set higher to avoid logKappa2 boundary issues
                          Region = 'User', 
                          purpose = "index2", 
                          bias.correct = FALSE,
                          knot_method = 'grid',
                          ObsModel = c(1,0))
                          #strata.limits = data$STAT_ZONE) # can be used to sum indices of abundance over strata
-# settings$FieldConfig[2,2]=0
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
 # Run model
@@ -54,9 +53,11 @@ fit = fit_model(settings = settings,
                 b_i = as_units(data$rg_wt,'kg'), 
                 a_i = as_units(data$AreaSwept_km2,'km^2'),
                 # v_i = as.numeric(data$VESSEL)-1,
-                input_grid=region)
+                input_grid=region,
+                run_model = T # make FALSE to see upper (fit$tmb_list$Upper) and lower (fit$tmb_list$Lpper) starting bounds
+                ) 
 
-vmod4 <- plot(fit)
+vmod3 <- plot(fit)
 
-
-# save.image("~/Desktop/professional/projects/Postdoc_FL/data/grouper/20220330_vmod4_results.RData")
+file_save <- paste0('~/Desktop/professional/projects/Postdoc_FL/data/grouper/',as.Date(Sys.time()),'_vmod3_results.RData') 
+save.image(file_save)
