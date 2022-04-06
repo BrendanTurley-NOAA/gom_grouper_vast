@@ -1,6 +1,7 @@
 rm(list=ls())
 gc()
 
+library(DHARMa)
 library(fields)
 library(lubridate)
 library(ncdf4)
