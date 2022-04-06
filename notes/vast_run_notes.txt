@@ -30,7 +30,7 @@ VAST errors
 # Error: Please change model structure to avoid problems with parameter estimates and then re-try; see details in `?check_fit`
 
 
-### warning recieved (2022/03031)
+### warning recieved (2022/03/31)
 # Check bounds for the following parameters:
     # Param starting_value     Lower       MLE     Upper final_gradient
 # 28 logkappa2     -0.1053605 -5.476512 -2.108411 -2.108411     -0.2129862
