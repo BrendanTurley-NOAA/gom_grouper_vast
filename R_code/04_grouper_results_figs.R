@@ -6,6 +6,7 @@ library(lubridate)
 library(ncdf4)
 library(raster)
 library(rgdal)
+library(scales)
 library(sp)
 library(sf)
 library(tidyr)
@@ -21,16 +22,22 @@ index_se <- vmod2$Index$Table$`Std. Error for Estimate`
 ### how to standardize the standard errors?
 
 par(mfrow=c(2,1))
-plot(index_yr,index,typ='b',
+plot(index_yr,index,
+     typ='o',las=1,
+     xlab='Year',ylab='',
+     col=4,pch=16,
      ylim=range(c(index+index_se,index-index_se)))
 polygon(c(index_yr,rev(index_yr)),
-        c(index+index_se,rev(index-index_se)))
+        c(index+index_se,rev(index-index_se)),
+        col=alpha(4,.3))
 
-barplot(c(NA,diff(index)),names.arg = index_yr)
-mtext('Change in index')
+barplot(c(NA,diff(index)),names.arg = index_yr,las=1)
+abline(h=0,lty=5)
+mtext('Change in index',line=1)
+
 
 plot(index_yr,index_st,typ='b')
-
+points(index_yr,index_st,typ='b',col=2,pch=16)
 
 ### center of gravity
 cog <- (vmod2$Range$SD_mean_Z_ctm)
@@ -45,19 +52,28 @@ coord_utm_lcl <- SpatialPoints(cbind(cog[,,1,1]-cog[,,1,2], cog[,,2,1]-cog[,,2,2
 coord_ll_lcl <- spTransform(coord_utm_lcl, CRS("+proj=longlat"))
 
 par(mfrow=c(2,1))
-plot(index_yr,coord_ll@coords[,1],typ='b',
+plot(index_yr,coord_ll@coords[,1],
+     typ='o',col=2,pch=16,las=1,
+     xlab='Year',ylab='Longitude',
      ylim=range(c(coord_ll_ucl@coords[,1],coord_ll_lcl@coords[,1])))
 polygon(c(index_yr,rev(index_yr)),
+        col=alpha(2,.3),
         c(coord_ll_ucl@coords[,1],rev(coord_ll_lcl@coords[,1])))
+mtext('Center of gravity')
 
-plot(index_yr,coord_ll@coords[,2],typ='b',
+plot(index_yr,coord_ll@coords[,2],
+     typ='o',col=4,pch=16,las=1,
+     xlab='Year',ylab='Latitude',
      ylim=range(c(coord_ll_ucl@coords[,2],coord_ll_lcl@coords[,2])))
 polygon(c(index_yr,rev(index_yr)),
+        col=alpha(4,.3),
         c(coord_ll_ucl@coords[,2],rev(coord_ll_lcl@coords[,2])))
 
 plot(coord_ll@coords,typ='b')
 text(coord_ll@coords,labels=index_yr)
 
+plot(cog[,,1,1]-min(cog[,,1,1]),las=1,ylab='Shift Eastward (km)')
+plot(cog[,,2,1]-min(cog[,,2,1]),las=1,ylab='Shift Northward (km)')
 
 ### area occupied
 area_occ <- (vmod2$Range$SD_effective_area_ctl[1,,1,])
