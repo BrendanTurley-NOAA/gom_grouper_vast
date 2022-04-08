@@ -1,18 +1,30 @@
+### help with diagnostics
+### https://cran.r-project.org/web/packages/DHARMa/vignettes/DHARMa.html
+
 library(DHARMa)
 
 load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-06_vmod3_results.RData")
 
 plot(vmod3$dharmaRes)
+testQuantiles(vmod3$dharmaRes)
+
+testZeroInflation(vmod3$dharmaRes)
 
 testDispersion(vmod3$dharmaRes)
 testDispersion(vmod3$dharmaRes,alternative='less')
-### underdispersion may be indicative of autocorrelation
+### under-dispersion may be indicative of autocorrelation ot model misspecification
 
 data[outliers(vmod3$dharmaRes),]
 
 residuals(vmod3$dharmaRes)
 
 plotResiduals(vmod3$dharmaRes,form=vmod3$dharmaRes$fittedPredictedResponse)
+
+plotResiduals(vmod3$dharmaRes,data$year)
+plotResiduals(vmod3$dharmaRes,data$VESSEL)
+plotResiduals(vmod3$dharmaRes,data$DEPTH_EMAX)
+plotResiduals(vmod3$dharmaRes,data$STAT_ZONE)
+plotResiduals(vmod3$dharmaRes,data$AreaSwept_km2)
 
 
 ta_res <- recalculateResiduals(vmod3$dharmaRes,fit$data_frame$t_i)

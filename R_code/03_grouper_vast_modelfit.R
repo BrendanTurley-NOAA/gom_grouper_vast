@@ -42,7 +42,7 @@ settings = make_settings(n_x = 300, # set higher to avoid logKappa2 boundary iss
                          purpose = "index2", 
                          bias.correct = FALSE,
                          knot_method = 'grid',
-                         ObsModel = c(1,0))
+                         ObsModel = c(1,0)) # ?make_data for details
                          #strata.limits = data$STAT_ZONE) # can be used to sum indices of abundance over strata
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
