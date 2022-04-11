@@ -5,7 +5,6 @@ library(ape)
 library(DHARMa)
 
 load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-11_vmod4_results.RData")
-results <- vmod4
 
 plot(results$dharmaRes)
 testQuantiles(results$dharmaRes)

@@ -12,6 +12,8 @@ library(sf)
 library(tidyr)
 library(VAST)
 
+### set model run version
+run <- 'vmod4'
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper/')
 # data <- read.csv('grp_snp_2019.csv')
@@ -47,7 +49,7 @@ settings = make_settings(n_x = 300, # set higher to avoid logKappa2 boundary iss
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
 # Run model
-fit = fit_model(settings = settings, 
+fit <- fit_model(settings = settings, 
                 Lat_i = data$DECSLAT, 
                 Lon_i = data$DECSLON, 
                 t_i = data$year, 
@@ -58,7 +60,7 @@ fit = fit_model(settings = settings,
                 run_model = T # make FALSE to see upper (fit$tmb_list$Upper) and lower (fit$tmb_list$Lpper) starting bounds
                 ) 
 
-vmod4 <- plot(fit)
+results <- plot(fit)
 
-file_save <- paste0('~/Desktop/professional/projects/Postdoc_FL/data/grouper/',as.Date(Sys.time()),'_vmod4_results.RData') 
+file_save <- paste0('~/Desktop/professional/projects/Postdoc_FL/data/grouper/',as.Date(Sys.time()),'_',run,'_results.RData') 
 save.image(file_save)

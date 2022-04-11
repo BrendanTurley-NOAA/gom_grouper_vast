@@ -13,7 +13,6 @@ library(tidyr)
 library(VAST)
 
 load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-11_vmod4_results.RData")
-results <- vmod4
 
 ### index
 index_yr <- as.numeric(paste(results$Index$Table$Time))
