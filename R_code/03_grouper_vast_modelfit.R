@@ -53,12 +53,12 @@ fit = fit_model(settings = settings,
                 t_i = data$year, 
                 b_i = as_units(data$rg_wt,'kg'), 
                 a_i = as_units(data$AreaSwept_km2,'km^2'),
-                # v_i = as.numeric(data$VESSEL)-1,
+                v_i = as.numeric(data$VESSEL)-1,
                 input_grid=region,
                 run_model = T # make FALSE to see upper (fit$tmb_list$Upper) and lower (fit$tmb_list$Lpper) starting bounds
                 ) 
 
-vmod3 <- plot(fit)
+vmod4 <- plot(fit)
 
-file_save <- paste0('~/Desktop/professional/projects/Postdoc_FL/data/grouper/',as.Date(Sys.time()),'_vmod3_results.RData') 
+file_save <- paste0('~/Desktop/professional/projects/Postdoc_FL/data/grouper/',as.Date(Sys.time()),'_vmod4_results.RData') 
 save.image(file_save)

@@ -12,13 +12,14 @@ library(sf)
 library(tidyr)
 library(VAST)
 
-load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-06_vmod3_results.RData")
+load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-11_vmod4_results.RData")
+results <- vmod4
 
 ### index
-index_yr <- as.numeric(paste(vmod2$Index$Table$Time))
-index <- vmod2$Index$Table$Estimate
-index_st <- vmod2$Index$Table$Estimate/mean(vmod2$Index$Table$Estimate)
-index_se <- vmod2$Index$Table$`Std. Error for Estimate`
+index_yr <- as.numeric(paste(results$Index$Table$Time))
+index <- results$Index$Table$Estimate
+index_st <- results$Index$Table$Estimate/mean(results$Index$Table$Estimate)
+index_se <- results$Index$Table$`Std. Error for Estimate`
 ### how to standardize the standard errors?
 
 par(mfrow=c(2,1))
@@ -40,7 +41,7 @@ plot(index_yr,index_st,typ='b')
 points(index_yr,index_st,typ='b',col=2,pch=16)
 
 ### center of gravity
-cog <- (vmod2$Range$SD_mean_Z_ctm)
+cog <- (results$Range$SD_mean_Z_ctm)
 
 coord_utm <- SpatialPoints(cbind(cog[,,1,1], cog[,,2,1]), proj4string = CRS("+proj=utm +zone=17 +units=km"))
 coord_ll <- spTransform(coord_utm, CRS("+proj=longlat"))
@@ -76,12 +77,14 @@ plot(cog[,,1,1]-min(cog[,,1,1]),las=1,ylab='Shift Eastward (km)')
 plot(cog[,,2,1]-min(cog[,,2,1]),las=1,ylab='Shift Northward (km)')
 
 ### area occupied
-area_occ <- (vmod2$Range$SD_effective_area_ctl[1,,1,])
+area_occ <- (results$Range$SD_effective_area_ctl[1,,1,])
 
 par(mfrow=c(2,1))
-plot(index_yr,area_occ[,1],typ='b',
+plot(index_yr,area_occ[,1],
+     typ='o',col=4,pch=16,las=1,
      ylim=range(c(area_occ[,1]+area_occ[,2],area_occ[,1]-area_occ[,2])))
 polygon(c(index_yr,rev(index_yr)),
+        col=alpha(4,.3),
         c(area_occ[,1]+area_occ[,2],rev(area_occ[,1]-area_occ[,2])))
 
 barplot(c(NA,diff(area_occ[,1])),names.arg = index_yr)
@@ -92,15 +95,15 @@ mtext('Change in area occupied')
 
 # par(mfrow=c(2,5))
 # for(i in 1:10){
-#   # quilt.plot(vmod2$map_list$PlotDF[,2:1],vmod2$Dens_xt[,i],asp=1,breaks=seq(-3,3,.1),col = tim.colors(60))
-#   bubblePlot(vmod2$map_list$PlotDF[,2:1],vmod2$Dens_xt[,i],asp=1,size=.5,highlight=F,zlim=c(-3,3))
+#   # quilt.plot(results$map_list$PlotDF[,2:1],results$Dens_xt[,i],asp=1,breaks=seq(-3,3,.1),col = tim.colors(60))
+#   bubblePlot(results$map_list$PlotDF[,2:1],results$Dens_xt[,i],asp=1,size=.5,highlight=F,zlim=c(-3,3))
 #   mtext(2009+i)
 # }
 
 
 r <- raster(ncols=300,nrow=300,
-            xmn=min(vmod2$map_list$PlotDF[,2]),xmx=max(vmod2$map_list$PlotDF[,2]),
-            ymn=min(vmod2$map_list$PlotDF[,1]),ymx=max(vmod2$map_list$PlotDF[,1]),
+            xmn=min(results$map_list$PlotDF[,2]),xmx=max(results$map_list$PlotDF[,2]),
+            ymn=min(results$map_list$PlotDF[,1]),ymx=max(results$map_list$PlotDF[,1]),
             res=.11)
 lon <- seq(r@extent@xmin,r@extent@xmax,len=r@ncols)
 lat <- seq(r@extent@ymin,r@extent@ymax,len=r@nrows)
@@ -110,14 +113,14 @@ col_pal <- colorRampPalette(c('gray20','purple','darkorange','gold'))
 # col_pal <- colorRampPalette(c('honeydew2','darkseagreen3','forestgreen','darkslategrey'))
 
 
-dens <- exp(vmod2$Dens_xt)
+dens <- exp(results$Dens_xt)
 cutoff <- quantile((dens),.95)
 dens[which(dens>=cutoff)] <- cutoff
 breaks <- pretty(dens,n=20)
 
 par(mfrow=c(2,5),mar=c(4,4,1.5,1))
 for(i in 1:10){
-  r1 <- raster::rasterize(vmod2$map_list$PlotDF[,2:1],r,dens[,i],fun=mean)
+  r1 <- raster::rasterize(results$map_list$PlotDF[,2:1],r,dens[,i],fun=mean)
   # plot(r1,col=col_pal(length(breaks)-1),breaks=breaks,asp=1)
   r2 <- matrix(r1@data@values,r1@ncols,r1@nrows)
   image(lon,lat,r2[,ncol(r2):1],col=col_pal(length(breaks)-1),breaks=breaks,asp=1)
@@ -129,6 +132,4 @@ for(i in 1:10){
   mtext(2009+i)
 }
 
-r2 <- matrix(r1@data@values,r1@ncols,r1@nrows)
-image(lon,lat,r2[,ncol(r2):1],col=col_pal(length(breaks)-1),breaks=breaks,asp=1)
 
