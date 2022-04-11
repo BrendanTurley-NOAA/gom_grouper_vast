@@ -13,7 +13,7 @@ library(tidyr)
 library(VAST)
 
 ### set model run version
-run <- 'vmod4'
+run <- 'vmod5'
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper/')
 # data <- read.csv('grp_snp_2019.csv')
@@ -37,6 +37,36 @@ data$rs_wt[which(is.na(data$rs_wt))] <- 0
 region <- read.csv('region.csv')
 
 
+### strata limits
+# https://github.com/James-Thorson-NOAA/VAST/issues/176
+strata_lon <- aggregate(data$DECSLON,by=list(data$STAT_ZONE),range,na.rm=T)
+strata_lon$x <- round(strata_lon$x)
+strata_lon$x[5:7,2] <- -82
+strata_lon$x[1,2] <- -81
+strata_lat <- aggregate(data$DECSLAT,by=list(data$STAT_ZONE),range,na.rm=T)
+strata_lat$x <- round(strata_lat$x)
+strata_lat$x[1,1] <- 24
+strata_lat$x[8,1] <- 28.5
+
+plot(strata_lon$x[,1],strata_lat$x[,1],asp=1,
+     xlim=range(strata_lon$x),ylim=range(strata_lat$x))
+for(i in 1:nrow(strata_lat)){
+  rect(strata_lon$x[i,1],strata_lat$x[i,1],
+       strata_lon$x[i,2],strata_lat$x[i,2])
+  text(strata_lon$x[i,1],strata_lat$x[i,1],strata_lat$Group.1[i],adj=1,cex=2)
+}
+
+strata.limits <- data.frame( 'STRATA' = strata_lon$Group.1,
+                             'north_border' = strata_lat$x[,2], 'south_border' = strata_lat$x[,1],
+                             'east_border' = strata_lon$x[,2], 'west_border' = strata_lon$x[,1] )
+
+Extrapolation_List = make_extrapolation_info( Region='User',
+                                              input_grid = region[,c(2:3,5)],
+                                              strata.limits=strata.limits )
+print(strata.limits)
+colSums( Extrapolation_List$a_el )
+which(colSums(Extrapolation_List$a_el)==0)
+
 ### ----------------- VAST modeling -----------------
 # Make settings (turning off bias.correct to save time for example)
 settings = make_settings(n_x = 300, # set higher to avoid logKappa2 boundary issues
@@ -44,8 +74,8 @@ settings = make_settings(n_x = 300, # set higher to avoid logKappa2 boundary iss
                          purpose = "index2", 
                          bias.correct = FALSE,
                          knot_method = 'grid',
-                         ObsModel = c(1,0)) # ?make_data for details
-                         #strata.limits = data$STAT_ZONE) # can be used to sum indices of abundance over strata
+                         ObsModel = c(1,0), # ?make_data for details
+                         strata.limits = strata.limits) # can be used to sum indices of abundance over strata
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
 # Run model

@@ -177,5 +177,21 @@ plot(grp_snp_cov$DECSLON[which(year(grp_snp_cov$date)==2021)],
      xlim=range(grp_snp_cov$DECSLON),ylim=range(grp_snp_cov$DECSLAT),
      cex=grp_snp_cov$rg_pr_ab[which(year(grp_snp_cov$date)==2021)]+1,asp=1)
 
+sort(unique(grp_snp_cov$STAT_ZONE))
+strata_lon <- aggregate(grp_snp_cov$DECSLON,by=list(grp_snp_cov$STAT_ZONE),range,na.rm=T)
+# strata_lon$x <- round(strata_lon$x)
+strata_lat <- aggregate(grp_snp_cov$DECSLAT,by=list(grp_snp_cov$STAT_ZONE),range,na.rm=T)
+# strata_lat$x <- round(strata_lat$x)
+
+plot(strata_lon$x[,1],strata_lat$x[,1],asp=1,
+     xlim=range(strata_lon$x),ylim=range(strata_lat$x))
+for(i in 1:9){
+  rect(strata_lon$x[i,1],strata_lat$x[i,1],
+       strata_lon$x[i,2],strata_lat$x[i,2])
+  text(strata_lon$x[i,1],strata_lat$x[i,1],strata_lat$Group.1[i],adj=1,cex=2)
+}
+### assign those in statzone 0 to 4
+grp_snp_cov$STAT_ZONE[which(grp_snp_cov$STAT_ZONE==0)] <- 4
+
 setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper/')
 write.csv(grp_snp_cov,'grp_snp_2022.csv',row.names = F)
