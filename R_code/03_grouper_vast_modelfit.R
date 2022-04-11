@@ -12,8 +12,14 @@ library(sf)
 library(tidyr)
 library(VAST)
 
-### set model run version
+### set model run version and create new folder to save results
 run <- 'vmod5'
+pthwy <- paste0('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/',run)
+if (file.exists(pthwy)) {
+  cat("The folder already exists")
+} else {
+  dir.create(pthwy)
+}
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper/')
 # data <- read.csv('grp_snp_2019.csv')
@@ -77,7 +83,7 @@ settings = make_settings(n_x = 300, # set higher to avoid logKappa2 boundary iss
                          ObsModel = c(1,0), # ?make_data for details
                          strata.limits = strata.limits) # can be used to sum indices of abundance over strata
 
-setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
+# setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
 # Run model
 fit <- fit_model(settings = settings, 
                 Lat_i = data$DECSLAT, 
@@ -87,7 +93,8 @@ fit <- fit_model(settings = settings,
                 a_i = as_units(data$AreaSwept_km2,'km^2'),
                 v_i = as.numeric(data$VESSEL)-1,
                 input_grid=region,
-                run_model = T # make FALSE to see upper (fit$tmb_list$Upper) and lower (fit$tmb_list$Lpper) starting bounds
+                run_model = T, # make FALSE to see upper (fit$tmb_list$Upper) and lower (fit$tmb_list$Lpper) starting bounds
+                working_dir = pthwy
                 ) 
 
 results <- plot(fit)
