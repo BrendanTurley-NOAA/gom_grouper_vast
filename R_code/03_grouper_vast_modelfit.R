@@ -23,7 +23,8 @@ run <- 'vmod6'
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper/')
 # data <- read.csv('grp_snp_2019.csv')
-data <- read.csv('grp_snp_2022.csv')
+# data <- read.csv('grp_snp_2022.csv')
+data <- read.csv('grp_snp_2022.v2.csv')
 data$year <- year(data$date)
 sort(unique(data$year))
 data <- data[data$year!=2021,]
