@@ -103,9 +103,25 @@ spcde <- 170021211 #red grouper
 ind <- which(catch$BIO_BGS==spcde)
 grouper <- catch[ind,]
 
-spcde <-170151107 # red snapper
+spcde <- 170151107 # red snapper
 ind <- which(catch$BIO_BGS==spcde)
 snapper <- catch[ind,]
+
+spcde1 <- 613000000 # sponge/porifera
+spcde2 <- 613000010
+spcde3 <- 613000020
+spcde4 <- 613000030
+spcde5 <- 613000040
+spcde6 <- 613000050
+ind <- which(catch$BIO_BGS==spcde1 | 
+               catch$BIO_BGS==spcde2 | 
+               catch$BIO_BGS==spcde3 | 
+               catch$BIO_BGS==spcde4 | 
+               catch$BIO_BGS==spcde5 |
+               catch$BIO_BGS==spcde6)
+sponge <- catch[ind,]
+sponge_agg <- aggregate(sponge$SELECT_BGS,by=list(sponge$CRUISEID,sponge$STATIONID),sum,na.rm=T)
+names(sponge_agg) <- c('CRUISEID','STATIONID','sp_wt')
 
 ### rename count and count extrapolation and total weight
 grouper <- grouper[,c(2:3,11:12,14)]
@@ -115,6 +131,7 @@ names(snapper)[c(3:5)] <- c('rs_cnt','rs_cntexp','rs_wt')
 
 ### merge species
 grp_snp <- merge(grouper,snapper,by=c('STATIONID','CRUISEID'),all=T)
+grp_snp <- merge(grp_snp,sponge_agg,by=c('STATIONID','CRUISEID'),all=T)
 
 ### subset for only FL and NOAA cruises and 2010 onward and trawl survey data
 grp_cruises <- cruises[is.element(cruises$CRUISEID,unique(grp_snp$CRUISEID)),]
@@ -160,9 +177,16 @@ new$DEPTH_EMAX <- (-new$DEPTH_EMAX)
 
 
 ind <- c(1:10,18,27:29,33:39,52)
+ind[10:22] <- ind[10:22]+1 # add for sponge data
+ind <- c(ind,10) # add for sponge data
 names(new)[ind]
+# [1] "STATIONID"     "CRUISEID"      "bot_do"        "rg_cnt"        "rg_cntexp"    
+# [6] "rg_wt"         "rs_cnt"        "rs_cntexp"     "rs_wt"         "VESSEL.x"     
+# [11] "TEMP_BOT"      "STAT_ZONE"     "DECSLAT"       "DECSLON"       "trawl_hrs"    
+# [16] "AreaSwept_km2" "date"          "rg_pr_ab"      "rs_pr_ab"      "rg_cpue"      
+# [21] "rs_cpue"       "DEPTH_EMAX" 
 grp_snp_cov <- new[,ind]
-ind <- c(2,1,10,17,12:16,22,4:6,18,20,7:9,19,21)
+ind <- c(2,1,10,17,12:16,22,4:6,18,20,7:9,19,21,23) # 23 is sponge wt
 names(grp_snp_cov)[ind]
 grp_snp_cov <- grp_snp_cov[,ind]
 vessel_m <- match(grp_snp_cov$VESSEL.x,vessels$VESSELID)
@@ -192,6 +216,8 @@ for(i in 1:9){
 }
 ### assign those in statzone 0 to 4
 grp_snp_cov$STAT_ZONE[which(grp_snp_cov$STAT_ZONE==0)] <- 4
+### remove stat zone 1
+grp_snp_cov <- grp_snp_cov[-which(grp_snp_cov$STAT_ZONE==1),]
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper/')
-write.csv(grp_snp_cov,'grp_snp_2022.csv',row.names = F)
+write.csv(grp_snp_cov,'grp_snp_2022.v2.csv',row.names = F) # v2 has sponge weight
