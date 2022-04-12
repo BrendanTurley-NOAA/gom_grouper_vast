@@ -13,13 +13,13 @@ library(tidyr)
 library(VAST)
 
 ### set model run version and create new folder to save results
-run <- 'vmod5'
-pthwy <- paste0('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/',run)
-if (file.exists(pthwy)) {
-  cat("The folder already exists")
-} else {
-  dir.create(pthwy)
-}
+run <- 'vmod6'
+# pthwy <- paste0('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/',run)
+# if (file.exists(pthwy)) {
+#   cat("The folder already exists")
+# } else {
+#   dir.create(pthwy)
+# }
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper/')
 # data <- read.csv('grp_snp_2019.csv')
@@ -92,6 +92,7 @@ fit <- fit_model(settings = settings,
                 b_i = as_units(data$rg_wt,'kg'), 
                 a_i = as_units(data$AreaSwept_km2,'km^2'),
                 v_i = as.numeric(data$VESSEL)-1,
+                # covariate_data #https://github.com/James-Thorson-NOAA/VAST/issues/262
                 input_grid=region,
                 run_model = T, # make FALSE to see upper (fit$tmb_list$Upper) and lower (fit$tmb_list$Lpper) starting bounds
                 working_dir = pthwy
