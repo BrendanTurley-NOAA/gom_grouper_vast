@@ -24,13 +24,14 @@ run <- 'vmod6'
 setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper/')
 # data <- read.csv('grp_snp_2019.csv')
 # data <- read.csv('grp_snp_2022.csv')
-data <- read.csv('grp_snp_2022.v2.csv')
+data <- read.csv('grp_snp_2022_v2.csv')
 data$year <- year(data$date)
-sort(unique(data$year))
-data <- data[data$year!=2021,]
 data$VESSEL <- as.factor(data$VESSEL)
-data$rg_wt[which(is.na(data$rg_wt))] <- 0
-data$rs_wt[which(is.na(data$rs_wt))] <- 0
+sort(unique(data$STAT_ZONE)) ### should not be stat zone 1
+sort(unique(data$year))
+### should I remove 2021?
+data <- data[-which(data$year==2021),]
+
 
 # par(mfrow=c(2,5))
 # for(i in sort(unique(data$year))){
@@ -48,12 +49,11 @@ region <- read.csv('region.csv')
 # https://github.com/James-Thorson-NOAA/VAST/issues/176
 strata_lon <- aggregate(data$DECSLON,by=list(data$STAT_ZONE),range,na.rm=T)
 strata_lon$x <- round(strata_lon$x)
-strata_lon$x[5:7,2] <- -82
-strata_lon$x[1,2] <- -81
+strata_lon$x[2:3,2] <- -81.5
+strata_lon$x[4:6,2] <- -82
 strata_lat <- aggregate(data$DECSLAT,by=list(data$STAT_ZONE),range,na.rm=T)
 strata_lat$x <- round(strata_lat$x)
-strata_lat$x[1,1] <- 24
-strata_lat$x[8,1] <- 28.5
+strata_lat$x[7,1] <- 28.5
 
 plot(strata_lon$x[,1],strata_lat$x[,1],asp=1,
      xlim=range(strata_lon$x),ylim=range(strata_lat$x))

@@ -38,9 +38,9 @@ lonbox_w <- -86 ### mouth of Mississippi River
 latbox_n <- 30.5 ### northern coast
 latbox_s <- 24.3 ### southern edge of Ket West
 
-setwd("~/Desktop/professional/biblioteca/data/shapefiles/gshhg-shp-2.3.7/GSHHS_shp/h/")
-world <- readOGR('GSHHS_h_L1.shp')
-world <- crop(world, extent(-87, -79.5, 24.3, 31))
+# setwd("~/Desktop/professional/biblioteca/data/shapefiles/gshhg-shp-2.3.7/GSHHS_shp/h/")
+# world <- readOGR('GSHHS_h_L1.shp')
+# world <- crop(world, extent(-87, -79.5, 24.3, 31))
 
 # setwd('~/Desktop/professional/projects/Postdoc_FL/data/ctd/seamap/public_seamap_csvs/')
 setwd('~/Desktop/professional/projects/Postdoc_FL/data/ctd/seamap/public_seamap_csvs/public_seamap_csvs_2022/')
@@ -218,6 +218,10 @@ for(i in 1:9){
 grp_snp_cov$STAT_ZONE[which(grp_snp_cov$STAT_ZONE==0)] <- 4
 ### remove stat zone 1
 grp_snp_cov <- grp_snp_cov[-which(grp_snp_cov$STAT_ZONE==1),]
+### make zeros
+grp_snp_cov$rg_wt[which(is.na(grp_snp_cov$rg_wt))] <- 0
+grp_snp_cov$rs_wt[which(is.na(grp_snp_cov$rs_wt))] <- 0
+grp_snp_cov$sp_wt[which(is.na(grp_snp_cov$sp_wt))] <- 0
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper/')
-write.csv(grp_snp_cov,'grp_snp_2022.v2.csv',row.names = F) # v2 has sponge weight
+write.csv(grp_snp_cov,'grp_snp_2022_v2.csv',row.names = F) # v2 has sponge weight
