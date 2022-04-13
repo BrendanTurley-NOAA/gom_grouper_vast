@@ -32,7 +32,6 @@ sort(unique(data$year))
 ### should I remove 2021?
 data <- data[-which(data$year==2021),]
 
-
 # par(mfrow=c(2,5))
 # for(i in sort(unique(data$year))){
 #   tmp <- data[data$year==i,]
@@ -42,8 +41,8 @@ data <- data[-which(data$year==2021),]
 #   mtext(i)
 # }
 
+### custom defined region
 region <- read.csv('region.csv')
-
 
 ### strata limits
 # https://github.com/James-Thorson-NOAA/VAST/issues/176
