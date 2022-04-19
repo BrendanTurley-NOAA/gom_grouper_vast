@@ -4,7 +4,7 @@
 library(ape)
 library(DHARMa)
 
-load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-11_vmod4_results.RData")
+load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-19_vmod6_results.RData")
 
 plot(results$dharmaRes)
 testQuantiles(results$dharmaRes)
@@ -31,7 +31,7 @@ plotResiduals(results$dharmaRes,data$AreaSwept_km2)
 ta_res <- recalculateResiduals(results$dharmaRes,fit$data_frame$t_i)
 testTemporalAutocorrelation(ta_res$scaledResiduals,2010:2019)
 
-testSpatialAutocorrelation(results$dharmaRes,fit$data_frame$t_i)
+# testSpatialAutocorrelation(results$dharmaRes,fit$data_frame$t_i)
 
 ## grouping by LAT/LON
 ## https://github.com/florianhartig/DHARMa/issues/297

@@ -12,7 +12,7 @@ library(sf)
 library(tidyr)
 library(VAST)
 
-load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-11_vmod4_results.RData")
+load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-19_vmod6_results.RData")
 
 ### index
 index_yr <- as.numeric(paste(results$Index$Table$Time))
@@ -91,6 +91,8 @@ mtext('Change in area occupied')
 
 
 ### density plots
+
+plot(index_yr,index/area_occ[,1],typ='b',ylab='Density (kg/km^2)')
 
 # par(mfrow=c(2,5))
 # for(i in 1:10){

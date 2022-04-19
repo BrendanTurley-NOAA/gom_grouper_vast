@@ -186,7 +186,8 @@ names(new)[ind]
 # [16] "AreaSwept_km2" "date"          "rg_pr_ab"      "rs_pr_ab"      "rg_cpue"      
 # [21] "rs_cpue"       "DEPTH_EMAX" 
 grp_snp_cov <- new[,ind]
-ind <- c(2,1,10,17,12:16,22,4:6,18,20,7:9,19,21,23) # 23 is sponge wt
+names(grp_snp_cov)
+ind <- c(2,1,10,17,12:16,22,4:6,18,20,7:9,19,21,3,11,23) # 23 is sponge wt
 names(grp_snp_cov)[ind]
 grp_snp_cov <- grp_snp_cov[,ind]
 vessel_m <- match(grp_snp_cov$VESSEL.x,vessels$VESSELID)
@@ -225,3 +226,34 @@ grp_snp_cov$sp_wt[which(is.na(grp_snp_cov$sp_wt))] <- 0
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper/')
 write.csv(grp_snp_cov,'grp_snp_2022_v2.csv',row.names = F) # v2 has sponge weight
+
+yr <- sort(unique(year(grp_snp_cov$date)))
+for(i in yr){
+  tmp <- grp_snp_cov[which(year(grp_snp_cov$date)==i),]
+  bubblePlot(tmp$DECSLON,tmp$DECSLAT,tmp$TEMP_BOT,
+             xlim=range(grp_snp_cov$DECSLON),ylim=range(grp_snp_cov$DECSLAT),
+             zlim=range(grp_snp_cov$TEMP_BOT,na.rm=T),asp=1)
+  mtext(i)
+}
+
+yr <- sort(unique(year(grp_snp_cov$date)))
+for(i in yr){
+  tmp <- grp_snp_cov[which(year(grp_snp_cov$date)==i),]
+  bubblePlot(tmp$DECSLON,tmp$DECSLAT,tmp$bot_do,
+             xlim=range(grp_snp_cov$DECSLON),ylim=range(grp_snp_cov$DECSLAT),
+             zlim=range(grp_snp_cov$bot_do,na.rm=T),asp=1)
+  mtext(i)
+}
+
+yr <- sort(unique(year(grp_snp_cov$date)))
+grp_snp_cov$lsp_wt <- log10(grp_snp_cov$sp_wt+1)
+for(i in yr){
+  tmp <- grp_snp_cov[which(year(grp_snp_cov$date)==i),]
+  bubblePlot(tmp$DECSLON,tmp$DECSLAT,tmp$lsp_wt,
+             xlim=range(grp_snp_cov$DECSLON),ylim=range(grp_snp_cov$DECSLAT),
+             zlim=range(grp_snp_cov$lsp_wt,na.rm=T),asp=1)
+  mtext(i)
+}
+
+sp_yr <- aggregate(grp_snp_cov$sp_wt,by=list(year(grp_snp_cov$date)),mean,na.rm=T)
+barplot(sp_yr$x)

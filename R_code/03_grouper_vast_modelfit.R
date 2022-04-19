@@ -29,8 +29,20 @@ data$year <- year(data$date)
 data$VESSEL <- as.factor(data$VESSEL)
 sort(unique(data$STAT_ZONE)) ### should not be stat zone 1
 sort(unique(data$year))
-### should I remove 2021?
+### should I remove 2021? Yes, spatial distribution of effort different
 data <- data[-which(data$year==2021),]
+
+### adding covariate data and formula
+data <- data[-which(is.na(data$bot_do)),]
+# https://github.com/James-Thorson-NOAA/VAST/wiki/Specify-covariates-and-visualize-responses
+# see also: https://github.com/James-Thorson-NOAA/VAST/issues/262
+covariate_data <- data.frame(Lat=data$DECSLAT,
+                             Lon=data$DECSLON,
+                             Year=year(data$date),
+                             bot_do=data$bot_do)
+                             # bot_temp=data$TEMP_BOT)
+X1_formula <- ~ bot_do #+ bot_temp
+X2_formula <- ~ 1
 
 # par(mfrow=c(2,5))
 # for(i in sort(unique(data$year))){
@@ -80,10 +92,11 @@ settings = make_settings(n_x = 300, # set higher to avoid logKappa2 boundary iss
                          purpose = "index2", 
                          bias.correct = FALSE,
                          knot_method = 'grid',
-                         ObsModel = c(1,0), # ?make_data for details
-                         strata.limits = strata.limits) # can be used to sum indices of abundance over strata
+                         ObsModel = c(1,0) # ?make_data for details
+                         # strata.limits = strata.limits # can be used to sum indices of abundance over strata
+                         )
 
-# setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
+pthwy <- '~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/'
 # Run model
 fit <- fit_model(settings = settings, 
                 Lat_i = data$DECSLAT, 
@@ -93,11 +106,15 @@ fit <- fit_model(settings = settings,
                 a_i = as_units(data$AreaSwept_km2,'km^2'),
                 v_i = as.numeric(data$VESSEL)-1,
                 # covariate_data #https://github.com/James-Thorson-NOAA/VAST/issues/262
-                input_grid=region,
+                X1_formula = X1_formula,
+                X2_formula = X2_formula,
+                covariate_data = covariate_data,
+                input_grid = region,
                 run_model = T, # make FALSE to see upper (fit$tmb_list$Upper) and lower (fit$tmb_list$Lpper) starting bounds
                 working_dir = pthwy
                 ) 
 
+setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
 results <- plot(fit)
 
 file_save <- paste0('~/Desktop/professional/projects/Postdoc_FL/data/grouper/',as.Date(Sys.time()),'_',run,'_results.RData') 
