@@ -12,7 +12,7 @@ library(sf)
 library(tidyr)
 library(VAST)
 
-load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-19_vmod6_results.RData")
+load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-20_vmod7_results.RData")
 
 ### index
 index_yr <- as.numeric(paste(results$Index$Table$Time))
@@ -35,7 +35,7 @@ barplot(c(NA,diff(index)),names.arg = index_yr,las=1)
 abline(h=0,lty=5)
 mtext('Change in index',line=1)
 
-
+par(mfrow=c(1,1))
 plot(index_yr,index_st,typ='b')
 points(index_yr,index_st,typ='b',col=2,pch=16)
 
@@ -69,11 +69,19 @@ polygon(c(index_yr,rev(index_yr)),
         col=alpha(4,.3),
         c(coord_ll_ucl@coords[,2],rev(coord_ll_lcl@coords[,2])))
 
+par(mfrow=c(1,1))
 plot(coord_ll@coords,typ='b')
 text(coord_ll@coords,labels=index_yr)
 
-plot(cog[,,1,1]-min(cog[,,1,1]),las=1,ylab='Shift Eastward (km)')
-plot(cog[,,2,1]-min(cog[,,2,1]),las=1,ylab='Shift Northward (km)')
+par(mfrow=c(2,1))
+plot(index_yr,cog[,,1,1]-min(cog[,,1,1]),
+# plot(index_yr,cog[,,1,1]-cog[,1,1,1],
+     las=1,typ='o',col=2,pch=16,
+     xlab='Year',ylab='Shift Eastward (km)')
+plot(index_yr,cog[,,2,1]-min(cog[,,2,1]),
+# plot(index_yr,cog[,,2,1]-cog[,1,2,1],
+     las=1,typ='o',col=4,pch=16,
+     xlab='Year',ylab='Shift Northward (km)')
 
 ### area occupied
 area_occ <- (results$Range$SD_effective_area_ctl[1,,1,])
@@ -92,7 +100,12 @@ mtext('Change in area occupied')
 
 ### density plots
 
-plot(index_yr,index/area_occ[,1],typ='b',ylab='Density (kg/km^2)')
+plot(index_yr,index/area_occ[,1],
+     typ='o',pch=16,col=2,
+     xlab='Year',ylab='Density (kg/km^2)')
+
+barplot(c(NA,diff(index/area_occ[,1])),names.arg = index_yr)
+mtext('Change in mean density')
 
 # par(mfrow=c(2,5))
 # for(i in 1:10){
@@ -110,6 +123,8 @@ lon <- seq(r@extent@xmin,r@extent@xmax,len=r@ncols)
 lat <- seq(r@extent@ymin,r@extent@ymax,len=r@nrows)
 
 col_pal <- colorRampPalette(c('gray20','purple','darkorange','gold'))
+lm_neg <- colorRampPalette(c('dodgerblue4','deepskyblue3','lightskyblue1','gray95'))
+lm_pos <- colorRampPalette(c('gray95','rosybrown1','tomato2','red4'))
 # col_pal <- colorRampPalette(c('purple4','dodgerblue4','seagreen3','khaki1'))
 # col_pal <- colorRampPalette(c('honeydew2','darkseagreen3','forestgreen','darkslategrey'))
 
@@ -134,3 +149,43 @@ for(i in 1:10){
 }
 
 
+breaks <- seq(-5.5,5.5,.5)
+cols <- c(lm_neg(length(which(breaks<0))),lm_pos(length(which(breaks>0))))
+
+par(mfrow=c(2,5),mar=c(4,4,1.5,1))
+for(i in 1:10){
+  r1 <- raster::rasterize(results$map_list$PlotDF[,2:1],r,dens[,i],fun=mean)
+  # plot(r1,col=col_pal(length(breaks)-1),breaks=breaks,asp=1)
+  r2 <- matrix(r1@data@values,r1@ncols,r1@nrows)
+  r2 <- r2[,ncol(r2):1]
+  if(i>=2){
+    r_diff <- r2-r3
+    if(max(r_diff,na.rm=T)>max(breaks)){
+      r_diff[which(r_diff>max(breaks))] <- max(breaks)
+    }
+    if(min(r_diff,na.rm=T)<min(breaks)){
+      r_diff[which(r_diff<min(breaks))] <- min(breaks)
+    }
+    
+    image(lon,lat,r_diff,asp=1,col=cols,breaks=breaks)
+    points(coord_ll@coords[i,1],coord_ll@coords[i,2],col=3,pch=16)
+    # if(i>1)(
+    #   arrows(coord_ll@coords[i-1,1],coord_ll@coords[i-1,2],
+    #          coord_ll@coords[i,1],coord_ll@coords[i,2],col='gray90',length=.05)
+    # )
+    # mtext(2009+i)
+    mtext(paste(2009+i,'-',2009+i-1))
+    print(quantile(r_diff,na.rm=T))
+  }
+  r3 <- r2
+}
+
+
+r4 <- r3-r2
+image(r4)
+image(r2)
+image(r3)
+
+if(max(r2-r3,na.rm=T)>max(breaks)){
+  
+}
