@@ -13,7 +13,7 @@ library(tidyr)
 library(VAST)
 
 ### set model run version and create new folder to save results
-run <- 'vmod6'
+run <- 'vmod7'
 # pthwy <- paste0('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/',run)
 # if (file.exists(pthwy)) {
 #   cat("The folder already exists")
@@ -33,7 +33,7 @@ sort(unique(data$year))
 data <- data[-which(data$year==2021),]
 
 ### adding covariate data and formula
-data <- data[-which(is.na(data$bot_do)),]
+# data <- data[-which(is.na(data$bot_do)),]
 # https://github.com/James-Thorson-NOAA/VAST/wiki/Specify-covariates-and-visualize-responses
 # see also: https://github.com/James-Thorson-NOAA/VAST/issues/262
 covariate_data <- data.frame(Lat=data$DECSLAT,
@@ -41,6 +41,8 @@ covariate_data <- data.frame(Lat=data$DECSLAT,
                              Year=year(data$date),
                              bot_do=data$bot_do)
                              # bot_temp=data$TEMP_BOT)
+### vast doesn't like NAs, but these data don't have to exactly match the input biomass data
+covariate_data <- covariate_data[-which(is.na(covariate_data$bot_do)),]
 X1_formula <- ~ bot_do #+ bot_temp
 X2_formula <- ~ 1
 
@@ -66,13 +68,13 @@ strata_lat <- aggregate(data$DECSLAT,by=list(data$STAT_ZONE),range,na.rm=T)
 strata_lat$x <- round(strata_lat$x)
 strata_lat$x[7,1] <- 28.5
 
-plot(strata_lon$x[,1],strata_lat$x[,1],asp=1,
-     xlim=range(strata_lon$x),ylim=range(strata_lat$x))
-for(i in 1:nrow(strata_lat)){
-  rect(strata_lon$x[i,1],strata_lat$x[i,1],
-       strata_lon$x[i,2],strata_lat$x[i,2])
-  text(strata_lon$x[i,1],strata_lat$x[i,1],strata_lat$Group.1[i],adj=1,cex=2)
-}
+# plot(strata_lon$x[,1],strata_lat$x[,1],asp=1,
+#      xlim=range(strata_lon$x),ylim=range(strata_lat$x))
+# for(i in 1:nrow(strata_lat)){
+#   rect(strata_lon$x[i,1],strata_lat$x[i,1],
+#        strata_lon$x[i,2],strata_lat$x[i,2])
+#   text(strata_lon$x[i,1],strata_lat$x[i,1],strata_lat$Group.1[i],adj=1,cex=2)
+# }
 
 strata.limits <- data.frame( 'STRATA' = strata_lon$Group.1,
                              'north_border' = strata_lat$x[,2], 'south_border' = strata_lat$x[,1],
@@ -110,7 +112,6 @@ fit <- fit_model(settings = settings,
                 b_i = as_units(data$rg_wt,'kg'), 
                 a_i = as_units(data$AreaSwept_km2,'km^2'),
                 v_i = as.numeric(data$VESSEL)-1,
-                # covariate_data #https://github.com/James-Thorson-NOAA/VAST/issues/262
                 X1_formula = X1_formula,
                 X2_formula = X2_formula,
                 covariate_data = covariate_data,
