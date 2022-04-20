@@ -4,10 +4,10 @@
 library(ape)
 library(DHARMa)
 
-load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-19_vmod6_results.RData")
+load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-20_vmod7_results.RData")
 
 plot(results$dharmaRes)
-testQuantiles(results$dharmaRes)
+tq <- testQuantiles(results$dharmaRes)
 
 testZeroInflation(results$dharmaRes)
 
