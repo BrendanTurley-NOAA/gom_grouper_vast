@@ -92,9 +92,14 @@ settings = make_settings(n_x = 300, # set higher to avoid logKappa2 boundary iss
                          purpose = "index2", 
                          bias.correct = FALSE,
                          knot_method = 'grid',
-                         ObsModel = c(1,0) # ?make_data for details
+                         ObsModel = c(1,0) # ?make_data for details; try delta-Gamma as alternative to lognormal
                          # strata.limits = strata.limits # can be used to sum indices of abundance over strata
                          )
+### change the Beta and Epsilon; fixed or random with AR1
+# settings$RhoConfig
+
+### Percent deviance explained
+# https://github.com/James-Thorson-NOAA/VAST/wiki/Percent-deviance-explained
 
 pthwy <- '~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/'
 # Run model
