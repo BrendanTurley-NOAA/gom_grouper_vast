@@ -12,7 +12,7 @@ library(sf)
 library(tidyr)
 library(VAST)
 
-load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-20_vmod7_results.RData")
+load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-21_vmod8_results.RData")
 
 ### index
 index_yr <- as.numeric(paste(results$Index$Table$Time))
@@ -122,19 +122,20 @@ r <- raster(ncols=300,nrow=300,
 lon <- seq(r@extent@xmin,r@extent@xmax,len=r@ncols)
 lat <- seq(r@extent@ymin,r@extent@ymax,len=r@nrows)
 
-col_pal <- colorRampPalette(c('gray20','purple','darkorange','gold'))
+
+# col_pal <- colorRampPalette(c('gray20','dodgerblue4','indianred3','gold1'))
+col_pal <- colorRampPalette(rev(c('khaki1','cadetblue2','dodgerblue3','slateblue4')))
 lm_neg <- colorRampPalette(c('dodgerblue4','deepskyblue3','lightskyblue1','gray95'))
 lm_pos <- colorRampPalette(c('gray95','rosybrown1','tomato2','red4'))
-# col_pal <- colorRampPalette(c('purple4','dodgerblue4','seagreen3','khaki1'))
-# col_pal <- colorRampPalette(c('honeydew2','darkseagreen3','forestgreen','darkslategrey'))
 
 
 dens <- exp(results$Dens_xt)
-cutoff <- quantile((dens),.95)
+# dens <- (results$Dens_xt) # log space
+cutoff <- quantile((dens),.99)
 dens[which(dens>=cutoff)] <- cutoff
 breaks <- pretty(dens,n=20)
 
-par(mfrow=c(2,5),mar=c(4,4,1.5,1))
+par(mfrow=c(2,5),mar=c(4,4,1.5,1),oma=c(0,0,0,4))
 for(i in 1:10){
   r1 <- raster::rasterize(results$map_list$PlotDF[,2:1],r,dens[,i],fun=mean)
   # plot(r1,col=col_pal(length(breaks)-1),breaks=breaks,asp=1)
@@ -147,12 +148,17 @@ for(i in 1:10){
   # )
   mtext(2009+i)
 }
+par(oma=c(0,0,0,1))
+imagePlot(legend.only=TRUE, zlim=range(dens),col=col_pal(20),
+          legend.lab=expression(paste('Red grouper density (kg km'^-2,')')),
+          legend.line=2.5)
 
 
 breaks <- seq(-5.5,5.5,.5)
+# breaks <- seq(-2,2,.1) # if log space
 cols <- c(lm_neg(length(which(breaks<0))),lm_pos(length(which(breaks>0))))
 
-par(mfrow=c(2,5),mar=c(4,4,1.5,1))
+par(mfrow=c(2,5),mar=c(4,4,1.5,1),oma=c(0,0,2,4))
 for(i in 1:10){
   r1 <- raster::rasterize(results$map_list$PlotDF[,2:1],r,dens[,i],fun=mean)
   # plot(r1,col=col_pal(length(breaks)-1),breaks=breaks,asp=1)
@@ -173,19 +179,12 @@ for(i in 1:10){
     #   arrows(coord_ll@coords[i-1,1],coord_ll@coords[i-1,2],
     #          coord_ll@coords[i,1],coord_ll@coords[i,2],col='gray90',length=.05)
     # )
-    # mtext(2009+i)
     mtext(paste(2009+i,'-',2009+i-1))
     print(quantile(r_diff,na.rm=T))
   }
   r3 <- r2
 }
-
-
-r4 <- r3-r2
-image(r4)
-image(r2)
-image(r3)
-
-if(max(r2-r3,na.rm=T)>max(breaks)){
-  
-}
+par(oma=c(0,0,0,1))
+imagePlot(legend.only=TRUE, zlim=range(breaks),col=cols,
+          legend.lab=expression(paste(Delta,'Red grouper density (kg km'^-2,')')),
+          legend.line=2.5)

@@ -13,7 +13,7 @@ library(tidyr)
 library(VAST)
 
 ### set model run version and create new folder to save results
-run <- 'vmod7'
+run <- 'vmod8'
 # pthwy <- paste0('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/',run)
 # if (file.exists(pthwy)) {
 #   cat("The folder already exists")
@@ -36,14 +36,20 @@ data <- data[-which(data$year==2021),]
 # data <- data[-which(is.na(data$bot_do)),]
 # https://github.com/James-Thorson-NOAA/VAST/wiki/Specify-covariates-and-visualize-responses
 # see also: https://github.com/James-Thorson-NOAA/VAST/issues/262
-covariate_data <- data.frame(Lat=data$DECSLAT,
-                             Lon=data$DECSLON,
-                             Year=year(data$date),
-                             bot_do=data$bot_do)
-                             # bot_temp=data$TEMP_BOT)
-### vast doesn't like NAs, but these data don't have to exactly match the input biomass data
-covariate_data <- covariate_data[-which(is.na(covariate_data$bot_do)),]
-X1_formula <- ~ bot_do #+ bot_temp
+# covariate_data <- data.frame(Lat=data$DECSLAT,
+#                              Lon=data$DECSLON,
+#                              Year=year(data$date),
+#                              bot_do=data$bot_do)
+#                              # bot_temp=data$TEMP_BOT)
+# ### vast doesn't like NAs, but these data don't have to exactly match the input biomass data
+# covariate_data <- covariate_data[-which(is.na(covariate_data$bot_do)),]
+# X1_formula <- ~ bot_do #+ bot_temp
+# X2_formula <- ~ 1
+
+### alternate covariate
+covariate_data <- read.csv('covariate_data.csv')
+covariate_data <- covariate_data[-which(is.na(covariate_data$Bot_DO)),]
+X1_formula <- ~ Bot_DO #+ bot_temp
 X2_formula <- ~ 1
 
 # par(mfrow=c(2,5))
