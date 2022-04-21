@@ -12,6 +12,15 @@ library(sf)
 library(tidyr)
 library(VAST)
 
+### load map
+# setwd("C:/Users/brendan.turley/Desktop/FL_habs/ne_10m_admin_0_countries")
+# setwd("~/Desktop/professional/biblioteca/data/shapefiles/ne_10m_admin_0_countries")
+# world <- readOGR('ne_10m_admin_0_countries.shp')
+setwd("~/Desktop/professional/biblioteca/data/shapefiles/gshhg-shp-2.3.7/GSHHS_shp/h/")
+world <- readOGR('GSHHS_h_L1.shp')
+world <- crop(world, extent(-86.5, -80, 24.5, 31))
+
+### load VAST results
 load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-21_vmod8_results.RData")
 
 ### index
@@ -135,13 +144,17 @@ cutoff <- quantile((dens),.99)
 dens[which(dens>=cutoff)] <- cutoff
 breaks <- pretty(dens,n=20)
 
+
+setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
+png("rg_den_vast.png", height = 5, width = 10, units = 'in', res=300)
 par(mfrow=c(2,5),mar=c(4,4,1.5,1),oma=c(0,0,0,4))
 for(i in 1:10){
   r1 <- raster::rasterize(results$map_list$PlotDF[,2:1],r,dens[,i],fun=mean)
   # plot(r1,col=col_pal(length(breaks)-1),breaks=breaks,asp=1)
   r2 <- matrix(r1@data@values,r1@ncols,r1@nrows)
   image(lon,lat,r2[,ncol(r2):1],col=col_pal(length(breaks)-1),breaks=breaks,asp=1)
-  points(coord_ll@coords[i,1],coord_ll@coords[i,2],col=3,pch=16)
+  points(coord_ll@coords[i,1],coord_ll@coords[i,2],col=2,pch=16)
+  plot(world,add=T,col='gray80')
   # if(i>1)(
   #   arrows(coord_ll@coords[i-1,1],coord_ll@coords[i-1,2],
   #          coord_ll@coords[i,1],coord_ll@coords[i,2],col='gray90',length=.05)
@@ -152,12 +165,15 @@ par(oma=c(0,0,0,1))
 imagePlot(legend.only=TRUE, zlim=range(dens),col=col_pal(20),
           legend.lab=expression(paste('Red grouper density (kg km'^-2,')')),
           legend.line=2.5)
-
+dev.off()
 
 breaks <- seq(-5.5,5.5,.5)
 # breaks <- seq(-2,2,.1) # if log space
 cols <- c(lm_neg(length(which(breaks<0))),lm_pos(length(which(breaks>0))))
 
+
+setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
+png("rg_diffvast.png", height = 5, width = 10, units = 'in', res=300)
 par(mfrow=c(2,5),mar=c(4,4,1.5,1),oma=c(0,0,2,4))
 for(i in 1:10){
   r1 <- raster::rasterize(results$map_list$PlotDF[,2:1],r,dens[,i],fun=mean)
@@ -172,13 +188,8 @@ for(i in 1:10){
     if(min(r_diff,na.rm=T)<min(breaks)){
       r_diff[which(r_diff<min(breaks))] <- min(breaks)
     }
-    
     image(lon,lat,r_diff,asp=1,col=cols,breaks=breaks)
-    points(coord_ll@coords[i,1],coord_ll@coords[i,2],col=3,pch=16)
-    # if(i>1)(
-    #   arrows(coord_ll@coords[i-1,1],coord_ll@coords[i-1,2],
-    #          coord_ll@coords[i,1],coord_ll@coords[i,2],col='gray90',length=.05)
-    # )
+    plot(world,add=T,col='gray80')
     mtext(paste(2009+i,'-',2009+i-1))
     print(quantile(r_diff,na.rm=T))
   }
@@ -188,3 +199,4 @@ par(oma=c(0,0,0,1))
 imagePlot(legend.only=TRUE, zlim=range(breaks),col=cols,
           legend.lab=expression(paste(Delta,'Red grouper density (kg km'^-2,')')),
           legend.line=2.5)
+dev.off()

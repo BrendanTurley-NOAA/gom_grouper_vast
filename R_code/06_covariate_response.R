@@ -1,6 +1,6 @@
 ### https://github.com/James-Thorson-NOAA/VAST/wiki/Visualize-covariate-response
 
-load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-19_vmod6_results.RData")
+load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-21_vmod8_results.RData")
 
 #####################
 # Effects package
@@ -14,7 +14,7 @@ catchability_data_full = fit$effects$catchability_data_full
 
 # Plot 1st linear predictor, but could use `transformation` to apply link function
 pred = Effect.fit_model( fit,
-                         focal.predictors = c("bot_do"),
+                         focal.predictors = c("Bot_DO"),
                          which_formula = "X1",
                          xlevels = 50,
                          transformation = list(link=identity, inverse=identity) )
