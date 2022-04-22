@@ -37,7 +37,17 @@ VAST errors
 # https://github.com/James-Thorson-NOAA/VAST/issues/300
 Jim Thorson recommends increasing the numer of knots because Kappa is the decorrelation length; it is likely that decorrelation is happening quickly so more knots might fix this.
 
+
 ### DHARMa residuals Quantile plots (2022/04/06)
 # Quantile deviations detected
 # https://cran.r-project.org/web/packages/DHARMa/vignettes/DHARMa.html
 # https://github.com/James-Thorson-NOAA/VAST/issues/294
+
+
+### error recieved (2022-04-22)
+trying to run Delta-Generalized Gamma model: ObsModel = c(9,0)
+The following parameters appear to be approaching zero:
+          Param starting_value Lower           MLE Upper final_gradient
+28 L_epsilon2_z              1  -Inf -3.360184e-06   Inf  -7.812311e-06
+# attemped fix:
+settings$FieldConfig[2,2]=0

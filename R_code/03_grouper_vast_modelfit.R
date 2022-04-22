@@ -13,7 +13,7 @@ library(tidyr)
 library(VAST)
 
 ### set model run version and create new folder to save results
-run <- 'vmod8'
+run <- 'vmod10'
 # pthwy <- paste0('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/',run)
 # if (file.exists(pthwy)) {
 #   cat("The folder already exists")
@@ -95,16 +95,18 @@ which(colSums(Extrapolation_List$a_el)==0)
 
 ### ----------------- VAST modeling -----------------
 # Make settings (turning off bias.correct to save time for example)
-settings = make_settings(n_x = 300, # set higher to avoid logKappa2 boundary issues
+settings = make_settings(n_x = 400, # set higher to avoid logKappa2 boundary issues; 300 worked with Delta-Lornormal
                          Region = 'User', 
                          purpose = "index2", 
                          bias.correct = FALSE,
                          knot_method = 'grid',
-                         ObsModel = c(1,0) # ?make_data for details; try delta-Gamma as alternative to lognormal
+                         ObsModel = c(9,0) # ?make_data for details; try Delta-Generalized Gamma as alternative to Delta-Lornormal
                          # strata.limits = strata.limits # can be used to sum indices of abundance over strata
                          )
 ### change the Beta and Epsilon; fixed or random with AR1
 # settings$RhoConfig
+## L_epsilon2_z changed to run Delta-Generalized Gamma model
+settings$FieldConfig[2,2]=0
 
 ### Percent deviance explained
 # https://github.com/James-Thorson-NOAA/VAST/wiki/Percent-deviance-explained
