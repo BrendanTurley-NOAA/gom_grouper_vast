@@ -22,7 +22,6 @@ world <- crop(world, extent(-86.5, -80, 24.5, 31))
 
 ### load VAST results
 load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-21_vmod8_results.RData")
-model <- 'vmod8'
 
 ### index
 index_yr <- as.numeric(paste(results$Index$Table$Time))
@@ -48,12 +47,61 @@ polygon(c(index_yr,rev(index_yr)),
 barplot(c(NA,diff(index)),names.arg = index_yr,las=1)
 abline(h=0,lty=5)
 mtext(expression(paste(Delta,' index')),2,4)
-mtext(paste('Run:',model),1,adj=1,outer=T,col='red',line=-1)
+mtext(paste('Run:',run),1,adj=1,outer=T,col='red',line=-1)
+dev.off()
+
+
+### ----------------- SEDAR 61 indices -----------------
+add_years <- function(df){
+  merge(data.frame(Year=seq(min(df$Year),max(df$Year))),
+        df,by='Year',all=T)
+}
+
+setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper')
+bbl <- read.table('rg_bbl_index.txt',header=T)
+trawl <- read.table('rg_trawl_index.txt',header=T)
+hb <- read.table('rg_headboat_index.txt',header=T)
+video <- read.table('rg_video_index.txt',header=T)
+
+bbl <- add_years(bbl)
+trawl <- add_years(trawl)
+hb <- add_years(hb)
+video <- add_years(video)
+vast_indx <- data.frame('Year'=index_yr,'Index'=index_st)
+vast_indx <- add_years(vast_indx)
+indx <- merge(bbl,trawl,by=c('Year'),all=T)
+indx <- merge(indx,hb,by=c('Year'),all=T)
+indx <- merge(indx,video,by=c('Year'),all=T)
+indx <- merge(indx,vast_indx,by=c('Year'),all=T)
+indx_en <- apply(indx[,c(5,12,20,27)],1,median,na.rm=T)
+indx_en2 <- apply(indx[,c(5,12,20,27,29)],1,median,na.rm=T)
+
+setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
+png("rg_indices_vast.png", height = 5, width = 8, units = 'in', res=300)
+plot(bbl$Year,bbl$Scaled_Index,
+     typ='o',lwd=2,pch=16,lty=1,
+     ylim=c(0,2.5),xaxt='n',xlab='',ylab='Scaled index')
+axis(1,2000:2017)
+points(trawl$Year,trawl$Scaled_Index,
+       typ='o',lwd=2,pch=17,lty=2,col='gray20')
+points(hb$Year,hb$relative_index,
+       typ='o',lwd=2,pch=15,lty=3,col='gray40')
+points(video$Year,video$std_indx,
+       typ='o',lwd=2,pch=18,lty=4,col='gray60')
+points(vast_indx$Year,vast_indx$Index,
+       typ='o',lwd=2,pch=20,lty=1,col=4)
+legend('topright',c('LL','Trawl','HB','Video','Ensemble','VAST'),
+       lty=c(1,2,3,4,1,1),pch=c(16,17,15,18,NA,20),
+       col=c(1,'gray20','gray40','gray60',2,4),bty='n',lwd=2)
+points(indx$Year,indx_en,typ='l',col=2,lwd=2,pch=20)
+# points(indx$Year,indx_en2,typ='l',col=3,lwd=2,pch=20)
+mtext('RG indices - SEDAR 61')
+abline(v=seq(2000,2017,5),lty=5,col='gray60')
 dev.off()
 
 par(mfrow=c(1,1))
-plot(index_yr,index_st,typ='b')
-points(index_yr,index_st,typ='b',col=2,pch=16)
+plot(index_yr,index_st,typ='o',col=2,pch=16)
+
 
 ### center of gravity
 cog <- (results$Range$SD_mean_Z_ctm)
@@ -89,7 +137,7 @@ axis(1,2010:2019)
 polygon(c(index_yr,rev(index_yr)),
         col=alpha(4,.3),
         c(coord_ll_ucl@coords[,2],rev(coord_ll_lcl@coords[,2])))
-mtext(paste('Run:',model),1,adj=1,outer=T,col='red',line=-1)
+mtext(paste('Run:',run),1,adj=1,outer=T,col='red',line=-1)
 dev.off()
 
 par(mfrow=c(1,1))
@@ -126,7 +174,7 @@ polygon(c(index_yr,rev(index_yr)),
 
 barplot(c(NA,diff(area_occ[,1])),names.arg = index_yr,las=1)
 mtext(expression(paste(Delta,'area occupied (km'^2,')')),2,3.5)
-mtext(paste('Run:',model),1,adj=1,outer=T,col='red',line=-1)
+mtext(paste('Run:',run),1,adj=1,outer=T,col='red',line=-1)
 dev.off()
 
 
@@ -190,7 +238,7 @@ par(oma=c(1,0,0,3))
 imagePlot(legend.only=TRUE, zlim=range(dens),col=col_pal(20),
           legend.lab=expression(paste('Red grouper density (kg km'^-2,')')),
           legend.line=2.5,legend.cex = .7,legend.width = 1.75)
-mtext(paste('Run:',model),1,adj=1,outer=T,col='red',line=-1)
+mtext(paste('Run:',run),1,adj=1,outer=T,col='red',line=-1)
 dev.off()
 
 
@@ -227,7 +275,7 @@ par(oma=c(1,0,0,3))
 imagePlot(legend.only=TRUE, zlim=range(breaks),col=cols,
           legend.lab=expression(paste(Delta,'Red grouper density (kg km'^-2,')')),
           legend.line=2.5,legend.cex = .7,legend.width = 1.75)
-mtext(paste('Run:',model),1,adj=1,outer=T,col='red',line=-1)
+mtext(paste('Run:',run),1,adj=1,outer=T,col='red',line=-1)
 dev.off()
 
 
@@ -259,7 +307,7 @@ par(oma=c(1,0,0,3))
 imagePlot(legend.only=TRUE, zlim=range(dens),col=col_pal(20),
           legend.lab=expression(paste('Red grouper density (kg km'^-2,')')),
           legend.line=2.5,legend.cex = .7,legend.width = 1.75)
-mtext(paste('Run:',model),1,adj=1,outer=T,col='red',line=-1)
+mtext(paste('Run:',run),1,adj=1,outer=T,col='red',line=-1)
 dev.off()
 
 
@@ -294,5 +342,5 @@ par(oma=c(1,0,0,3))
 imagePlot(legend.only=TRUE, zlim=range(breaks),col=cols,
           legend.lab=expression(paste(Delta,'Red grouper density (kg km'^-2,')')),
           legend.line=2.5,legend.cex = .7,legend.width = 1.75)
-mtext(paste('Run:',model),1,adj=1,outer=T,col='red',line=-1)
+mtext(paste('Run:',run),1,adj=1,outer=T,col='red',line=-1)
 dev.off()
