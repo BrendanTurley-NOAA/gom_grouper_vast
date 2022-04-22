@@ -203,7 +203,7 @@ lon <- seq(r@extent@xmin,r@extent@xmax,len=r@ncols)
 lat <- seq(r@extent@ymin,r@extent@ymax,len=r@nrows)
 
 
-# col_pal <- colorRampPalette(c('gray20','dodgerblue4','indianred3','gold1'))
+col_pal <- colorRampPalette(c('gray20','dodgerblue4','indianred3','gold1'))
 col_pal <- colorRampPalette(rev(c('khaki1','cadetblue2','dodgerblue3','slateblue4')))
 lm_neg <- colorRampPalette(c('dodgerblue4','deepskyblue3','lightskyblue1','gray95'))
 lm_pos <- colorRampPalette(c('gray95','rosybrown1','tomato2','red4'))
