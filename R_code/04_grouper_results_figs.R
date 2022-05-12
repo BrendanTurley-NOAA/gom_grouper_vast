@@ -3,6 +3,7 @@ gc()
 
 library(fields)
 library(lubridate)
+library(MASS)
 library(ncdf4)
 library(raster)
 library(rgdal)
@@ -11,6 +12,24 @@ library(sp)
 library(sf)
 library(tidyr)
 library(VAST)
+
+### takes a linear index of a matrix and returns row (r) and column (c) indices
+### requires some linear index (ind)
+### e.g., ind <- which(a==0) or ind <- which(is.na(a)), if a is a matrix m x n
+ind2sub <- function(ind,a){
+  m <- nrow(a)
+  r <- ((ind-1) %% m) + 1
+  c <- floor((ind-1) / m) + 1
+  return(cbind(r,c))
+}
+
+### load bathymetry
+setwd("~/Desktop/professional/biblioteca/data")
+bathy <- nc_open('etopo1.nc')
+topo <- ncvar_get(bathy, 'Band1')
+topo_lat <- ncvar_get(bathy, 'lat')
+topo_lon <- ncvar_get(bathy, 'lon')
+nc_close(bathy)
 
 ### load map
 # setwd("C:/Users/brendan.turley/Desktop/FL_habs/ne_10m_admin_0_countries")
@@ -154,6 +173,46 @@ plot(index_yr,cog[,,2,1]-min(cog[,,2,1]),
 # plot(index_yr,cog[,,2,1]-cog[,1,2,1],
      las=1,typ='o',col=4,pch=16,
      xlab='Year',ylab='Shift Northward (km)')
+
+
+### center of depth
+
+lon_i <- unlist(lapply(results$map_list$PlotDF[,2], function(x) which.min(abs(x-topo_lon))))
+lat_i <- unlist(lapply(results$map_list$PlotDF[,1], function(x) which.min(abs(x-topo_lat))))
+
+bottom_z <- rep(NA,length(lon_i))
+for(i in 1:length(lon_i)){
+  bottom_z[i] <- topo[lon_i[i],lat_i[i]]
+}
+
+# plot(results$map_list$PlotDF[,2],results$map_list$PlotDF[,1],
+#      cex=-bottom_z/100,asp=1)
+
+dens <- exp(results$Dens_xt)
+
+cod <- matrix(NA,10,3)
+par(mfrow=c(1,2))
+for(i in 1:10){
+  # center of depth
+  cod[i,1] <- sum(dens[,i]*bottom_z)/sum(dens[,i])
+  # range
+  kde1 <- kde2d(dens[,i],bottom_z,n=50)
+  image(kde1)
+  ci_95 <- quantile(kde1$z,c(.95))
+  kde3 <- kde1
+  kde3$z[which(kde3$z<ci_95)] <- NA
+  image(kde3)
+  mtext(2009+i)
+  ind <- which(!is.na(kde3$z))
+  rc <- ind2sub(ind,kde3$z)
+  cod[i,2:3] <- range(kde3$y[rc[,2]])
+}
+
+plot(2010:2019,cod[,1],ylim=range(cod[,2:3]))
+polygon(c(2010:2019,rev(2010:2019)),
+        c(cod[,2],rev(cod[,3])))
+
+
 
 
 ### area occupied
