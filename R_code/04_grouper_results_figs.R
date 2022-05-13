@@ -196,16 +196,27 @@ for(i in 1:10){
   # center of depth
   cod[i,1] <- sum(dens[,i]*bottom_z)/sum(dens[,i])
   # range
-  kde1 <- kde2d(dens[,i],bottom_z,n=50)
-  image(kde1)
-  ci_95 <- quantile(kde1$z,c(.95))
-  kde3 <- kde1
-  kde3$z[which(kde3$z<ci_95)] <- NA
-  image(kde3)
-  mtext(2009+i)
-  ind <- which(!is.na(kde3$z))
-  rc <- ind2sub(ind,kde3$z)
-  cod[i,2:3] <- range(kde3$y[rc[,2]])
+  # kde1 <- kde2d(dens[,i],bottom_z,n=50)
+  # image(kde1)
+  # ci_95 <- quantile(kde1$z,c(.95))
+  # kde3 <- kde1
+  # kde3$z[which(kde3$z<ci_95)] <- NA
+  # image(kde3)
+  # mtext(2009+i)
+  # ind <- which(!is.na(kde3$z))
+  # rc <- ind2sub(ind,kde3$z)
+  # cod[i,2:3] <- range(kde3$y[rc[,2]])
+ 
+  dens_sort_sum <- cumsum(dens[,i][order(bottom_z)])/sum(dens[,i])
+  z_sort <- bottom_z[order(bottom_z)]
+  
+  bind <- which(dens_sort_sum<=.05)
+  bot <- z_sort[max(bind)]
+  
+  tind <- which(dens_sort_sum>=.95)
+  top <- z_sort[min(tind)]
+  
+  cod[i,2:3] <- c(bot,top)
 }
 
 plot(2010:2019,cod[,1],ylim=range(cod[,2:3]))
