@@ -14,10 +14,10 @@ catchability_data_full = fit$effects$catchability_data_full
 
 # Plot 1st linear predictor, but could use `transformation` to apply link function
 pred = Effect.fit_model( fit,
-                         focal.predictors = c("Bot_DO"),
+                         focal.predictors = c("Bot_Temp"),
                          which_formula = "X1",
-                         xlevels = 50,
-                         transformation = list(link=identity, inverse=identity) )
+                         xlevels = 100)
+                         # transformation = list(link=identity, inverse=identity) )
 plot(pred)
 
 #####################
@@ -25,6 +25,8 @@ plot(pred)
 #####################
 
 library(pdp)
+
+units_options(allow_mixed = TRUE)
 
 # Make function to interface with pdp
 pred.fun = function( object, newdata ){
@@ -40,7 +42,7 @@ pred.fun = function( object, newdata ){
 
 # Run partial
 Partial = partial( object = fit,
-                   pred.var = "bot_do",
+                   pred.var = "Bot_Temp",
                    pred.fun = pred.fun,
                    train = fit$covariate_data )
 

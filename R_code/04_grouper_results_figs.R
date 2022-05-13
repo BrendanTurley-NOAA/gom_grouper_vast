@@ -40,7 +40,7 @@ world <- readOGR('GSHHS_h_L1.shp')
 world <- crop(world, extent(-86.5, -80, 24.5, 31))
 
 ### load VAST results
-load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-04-21_vmod8_results.RData")
+load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-05-13_vmod14_results.RData")
 
 ### index
 index_yr <- as.numeric(paste(results$Index$Table$Time))
@@ -97,10 +97,12 @@ indx_en2 <- apply(indx[,c(5,12,20,27,29)],1,median,na.rm=T)
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
 png("rg_indices_vast.png", height = 5, width = 8, units = 'in', res=300)
+par(mfrow=c(1,1),mar=c(5,5,1,1),oma=c(1,0,0,0))
 plot(bbl$Year,bbl$Scaled_Index,
      typ='o',lwd=2,pch=16,lty=1,
-     ylim=c(0,2.5),xaxt='n',xlab='',ylab='Scaled index')
-axis(1,2000:2017)
+     xlim=c(2000,2019),ylim=c(0,2.5),
+     xaxt='n',xlab='',ylab='Scaled index')
+axis(1,2000:2020)
 points(trawl$Year,trawl$Scaled_Index,
        typ='o',lwd=2,pch=17,lty=2,col='gray20')
 points(hb$Year,hb$relative_index,
@@ -115,7 +117,7 @@ legend('topright',c('LL','Trawl','HB','Video','Ensemble','VAST'),
 points(indx$Year,indx_en,typ='l',col=2,lwd=2,pch=20)
 # points(indx$Year,indx_en2,typ='l',col=3,lwd=2,pch=20)
 mtext('RG indices - SEDAR 61')
-abline(v=seq(2000,2017,5),lty=5,col='gray60')
+abline(v=seq(2000,2020,5),lty=5,col='gray60')
 dev.off()
 
 par(mfrow=c(1,1))
@@ -219,11 +221,10 @@ for(i in 1:10){
   cod[i,2:3] <- c(bot,top)
 }
 
+par(mfrow=c(1,1))
 plot(2010:2019,cod[,1],ylim=range(cod[,2:3]))
 polygon(c(2010:2019,rev(2010:2019)),
         c(cod[,2],rev(cod[,3])))
-
-
 
 
 ### area occupied
@@ -273,7 +274,7 @@ lon <- seq(r@extent@xmin,r@extent@xmax,len=r@ncols)
 lat <- seq(r@extent@ymin,r@extent@ymax,len=r@nrows)
 
 
-col_pal <- colorRampPalette(c('gray20','dodgerblue4','indianred3','gold1'))
+# col_pal <- colorRampPalette(c('gray20','dodgerblue4','indianred3','gold1'))
 col_pal <- colorRampPalette(rev(c('khaki1','cadetblue2','dodgerblue3','slateblue4')))
 lm_neg <- colorRampPalette(c('dodgerblue4','deepskyblue3','lightskyblue1','gray95'))
 lm_pos <- colorRampPalette(c('gray95','rosybrown1','tomato2','red4'))

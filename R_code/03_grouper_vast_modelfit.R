@@ -13,7 +13,7 @@ library(tidyr)
 library(VAST)
 
 ### set model run version and create new folder to save results
-run <- 'vmod10'
+run <- 'vmod14'
 # pthwy <- paste0('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/',run)
 # if (file.exists(pthwy)) {
 #   cat("The folder already exists")
@@ -48,8 +48,16 @@ data <- data[-which(data$year==2021),]
 
 ### alternate covariate
 covariate_data <- read.csv('covariate_data.csv')
-covariate_data <- covariate_data[-which(is.na(covariate_data$Bot_DO)),]
-X1_formula <- ~ Bot_DO #+ bot_temp
+### bottom DO
+# if(length(which(is.na(covariate_data$Bot_DO)))>0){
+#   covariate_data <- covariate_data[-which(is.na(covariate_data$Bot_DO)),]
+# }
+# X1_formula <- ~ Bot_DO #+ bot_temp
+### bottom temp
+if(length(which(is.na(covariate_data$Bot_Temp)))>0){
+  covariate_data <- covariate_data[-which(is.na(covariate_data$Bot_Temp)),]
+}
+X1_formula <- ~ Bot_Temp
 X2_formula <- ~ 1
 
 # par(mfrow=c(2,5))
@@ -95,18 +103,24 @@ which(colSums(Extrapolation_List$a_el)==0)
 
 ### ----------------- VAST modeling -----------------
 # Make settings (turning off bias.correct to save time for example)
-settings = make_settings(n_x = 400, # set higher to avoid logKappa2 boundary issues; 300 worked with Delta-Lornormal
+settings = make_settings(n_x = 250, # set higher to avoid logKappa2 boundary issues; 250 worked with Delta-Lognormal; 400 for Delta-Generalized Gamma
                          Region = 'User', 
                          purpose = "index2", 
                          bias.correct = FALSE,
                          knot_method = 'grid',
-                         ObsModel = c(9,0) # ?make_data for details; try Delta-Generalized Gamma as alternative to Delta-Lornormal
+                         use_anisotropy = T,
+                         # FieldConfig = c("Omega1"='IID', "Omega2"='IID',"Epsilon1"='IID', "Epsilon2"='IID',"Beta1"='IID', "Beta2"='IID'),
+                         FieldConfig = matrix(c('IID','IID','IID','IID','IID','IID'), ncol=2, nrow=3,
+                                              dimnames=list(c("Omega","Epsilon","Beta"),c("Component_1","Component_2"))),
+                         RhoConfig = c("Beta1"=0, "Beta2"=0,
+                                       "Epsilon1"=4, "Epsilon2"=4),
+                         ObsModel = c(4,0) # ?make_data for details; try Delta-Generalized Gamma as alternative to Delta-Lognormal
                          # strata.limits = strata.limits # can be used to sum indices of abundance over strata
                          )
 ### change the Beta and Epsilon; fixed or random with AR1
 # settings$RhoConfig
 ## L_epsilon2_z changed to run Delta-Generalized Gamma model
-settings$FieldConfig[2,2]=0
+# settings$FieldConfig[2,2]=0
 
 ### Percent deviance explained
 # https://github.com/James-Thorson-NOAA/VAST/wiki/Percent-deviance-explained
@@ -123,6 +137,7 @@ fit <- fit_model(settings = settings,
                 X1_formula = X1_formula,
                 X2_formula = X2_formula,
                 covariate_data = covariate_data,
+                X1config_cp = array(3,dim=c(1,1)), ### added vmod14; not working
                 input_grid = region,
                 run_model = T, # make FALSE to see upper (fit$tmb_list$Upper) and lower (fit$tmb_list$Lpper) starting bounds
                 working_dir = pthwy
