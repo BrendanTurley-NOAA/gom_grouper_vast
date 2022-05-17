@@ -40,7 +40,7 @@ world <- readOGR('GSHHS_h_L1.shp')
 world <- crop(world, extent(-86.5, -80, 24.5, 31))
 
 ### load VAST results
-load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-05-13_vmod14_results.RData")
+load("~/Desktop/professional/projects/Postdoc_FL/data/grouper/2022-05-17_vmod14_results.RData")
 
 ### index
 index_yr <- as.numeric(paste(results$Index$Table$Time))

@@ -27,38 +27,38 @@ setwd('~/Desktop/professional/projects/Postdoc_FL/data/grouper/')
 data <- read.csv('grp_snp_2022_v2.csv')
 data$year <- year(data$date)
 data$VESSEL <- as.factor(data$VESSEL)
-sort(unique(data$STAT_ZONE)) ### should not be stat zone 1
-sort(unique(data$year))
+# sort(unique(data$STAT_ZONE)) ### should not be stat zone 1
+# sort(unique(data$year))
 ### should I remove 2021? Yes, spatial distribution of effort different
 data <- data[-which(data$year==2021),]
 
 ### adding covariate data and formula
-# data <- data[-which(is.na(data$bot_do)),]
+data <- data[-which(is.na(data$bot_do)),]
 # https://github.com/James-Thorson-NOAA/VAST/wiki/Specify-covariates-and-visualize-responses
 # see also: https://github.com/James-Thorson-NOAA/VAST/issues/262
-# covariate_data <- data.frame(Lat=data$DECSLAT,
-#                              Lon=data$DECSLON,
-#                              Year=year(data$date),
-#                              bot_do=data$bot_do)
-#                              # bot_temp=data$TEMP_BOT)
+covariate_data <- data.frame(Lat=data$DECSLAT,
+                             Lon=data$DECSLON,
+                             Year=year(data$date),
+                             bot_do=data$bot_do)
+                             # bot_temp=data$TEMP_BOT)
 # ### vast doesn't like NAs, but these data don't have to exactly match the input biomass data
 # covariate_data <- covariate_data[-which(is.na(covariate_data$bot_do)),]
-# X1_formula <- ~ bot_do #+ bot_temp
-# X2_formula <- ~ 1
+X1_formula <- ~ bot_do #+ bot_temp
+X2_formula <- ~ 1
 
 ### alternate covariate
-covariate_data <- read.csv('covariate_data.csv')
+# covariate_data <- read.csv('covariate_data.csv')
 ### bottom DO
 # if(length(which(is.na(covariate_data$Bot_DO)))>0){
 #   covariate_data <- covariate_data[-which(is.na(covariate_data$Bot_DO)),]
 # }
 # X1_formula <- ~ Bot_DO #+ bot_temp
 ### bottom temp
-if(length(which(is.na(covariate_data$Bot_Temp)))>0){
-  covariate_data <- covariate_data[-which(is.na(covariate_data$Bot_Temp)),]
-}
-X1_formula <- ~ Bot_Temp
-X2_formula <- ~ 1
+# if(length(which(is.na(covariate_data$Bot_Temp)))>0){
+#   covariate_data <- covariate_data[-which(is.na(covariate_data$Bot_Temp)),]
+# }
+# X1_formula <- ~ Bot_Temp
+# X2_formula <- ~ 1
 
 # par(mfrow=c(2,5))
 # for(i in sort(unique(data$year))){
@@ -137,7 +137,7 @@ fit <- fit_model(settings = settings,
                 X1_formula = X1_formula,
                 X2_formula = X2_formula,
                 covariate_data = covariate_data,
-                X1config_cp = array(3,dim=c(1,1)), ### added vmod14; not working
+                # X1config_cp = array(3,dim=c(1,1)), ### added vmod14; not working
                 input_grid = region,
                 run_model = T, # make FALSE to see upper (fit$tmb_list$Upper) and lower (fit$tmb_list$Lpper) starting bounds
                 working_dir = pthwy
