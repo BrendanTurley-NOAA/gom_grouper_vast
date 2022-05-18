@@ -109,12 +109,11 @@ settings = make_settings(n_x = 250, # set higher to avoid logKappa2 boundary iss
                          bias.correct = FALSE,
                          knot_method = 'grid',
                          use_anisotropy = T,
-                         # FieldConfig = c("Omega1"='IID', "Omega2"='IID',"Epsilon1"='IID', "Epsilon2"='IID',"Beta1"='IID', "Beta2"='IID'),
                          FieldConfig = matrix(c('IID','IID','IID','IID','IID','IID'), ncol=2, nrow=3,
                                               dimnames=list(c("Omega","Epsilon","Beta"),c("Component_1","Component_2"))),
                          RhoConfig = c("Beta1"=0, "Beta2"=0,
                                        "Epsilon1"=4, "Epsilon2"=4),
-                         ObsModel = c(4,0) # ?make_data for details; try Delta-Generalized Gamma as alternative to Delta-Lognormal
+                         ObsModel = c(4,0) # try Delta-Gamma as alternative to Delta-Lognormal
                          # strata.limits = strata.limits # can be used to sum indices of abundance over strata
                          )
 ### change the Beta and Epsilon; fixed or random with AR1
