@@ -110,8 +110,7 @@ settings = make_settings(n_x = 250, # set higher to avoid logKappa2 boundary iss
                          knot_method = 'grid',
                          use_anisotropy = T,
                          FieldConfig = matrix(c('IID','IID','IID','IID','IID','IID'), ncol=2, nrow=3, dimnames=list(c("Omega","Epsilon","Beta"),c("Component_1","Component_2"))),
-                         RhoConfig = c("Beta1"=0, "Beta2"=0,
-                                       "Epsilon1"=4, "Epsilon2"=4),
+                         RhoConfig = c("Beta1"=0, "Beta2"=0, "Epsilon1"=4, "Epsilon2"=4),
                          ObsModel = c(4,0) # try Delta-Gamma as alternative to Delta-Lognormal
                          # strata.limits = strata.limits # can be used to sum indices of abundance over strata
                          )
