@@ -13,7 +13,7 @@ library(tidyr)
 library(VAST)
 
 ### set model run version and create new folder to save results
-run <- 'vmod14'
+run <- 'vmod15'
 # pthwy <- paste0('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/',run)
 # if (file.exists(pthwy)) {
 #   cat("The folder already exists")
@@ -109,7 +109,7 @@ settings = make_settings(n_x = 250, # set higher to avoid logKappa2 boundary iss
                          bias.correct = FALSE,
                          knot_method = 'grid',
                          use_anisotropy = T,
-                         FieldConfig = matrix(c('IID','IID','IID','IID','IID','IID'), ncol=2, nrow=3, dimnames=list(c("Omega","Epsilon","Beta"),c("Component_1","Component_2"))),
+                         FieldConfig = matrix(c('1','1','IID','1','1','IID'), ncol=2, nrow=3, dimnames=list(c("Omega","Epsilon","Beta"),c("Component_1","Component_2"))),
                          RhoConfig = c("Beta1"=0, "Beta2"=0, "Epsilon1"=4, "Epsilon2"=4),
                          ObsModel = c(4,0) # try Delta-Gamma as alternative to Delta-Lognormal
                          # strata.limits = strata.limits # can be used to sum indices of abundance over strata
@@ -142,6 +142,8 @@ fit <- fit_model(settings = settings,
 
 setwd('~/Desktop/professional/projects/Postdoc_FL/figures/grouper/vast/')
 results <- plot(fit)
+
+plot(fit, plot_set=c(1:3,6:7,10:12,14:21)) # 4 and 5 depreciated; 8 and 9 error
 
 file_save <- paste0('~/Desktop/professional/projects/Postdoc_FL/data/grouper/',as.Date(Sys.time()),'_',run,'_results.RData') 
 save.image(file_save)
