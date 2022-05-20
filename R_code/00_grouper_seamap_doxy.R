@@ -763,6 +763,7 @@ abline(h=c(median(rg_lth_freq_n$LEN_GLF,na.rm=T),18*25.4),
        col=c(1,2),lwd=2,lty=5)
 # dev.off()
 
+y_d <- matrix(NA,10,512)
 setwd("~/Desktop/professional/projects/Postdoc_FL/figures")
 png("rg_lth_freq2.png", height = 5, width = 8, units = 'in', res=300)
 plot(1,1,col='white',xlim=c(2009,2019),ylim=c(0,1000),
@@ -770,9 +771,12 @@ plot(1,1,col='white',xlim=c(2009,2019),ylim=c(0,1000),
 abline(v=2010:2019,col='gray50')
 for(i in 2010:2019){
   tmp <- rg_lth_freq_n[which(year(rg_lth_freq_n$date)==i),]
-  dt <- density(tmp$LEN_GLF)
+  dt <- density(tmp$LEN_GLF,from=0,to=1000)
+  y_d[i-2009,] <- dt$y
+  print(range(dt$x))
   points(i-dt$y*200,dt$x,typ='l')
-  polygon(c(i-dt$y*200,i-dt$y[1]*200),c(dt$x,dt$x[1]),col=2)
+  # polygon(c(i-dt$y*200,i-dt$y[1]*200),c(dt$x,dt$x[1]),col=2)
+  polygon(c(i,i-dt$y*200,i,i),c(dt$x[1],dt$x,dt$x[length(dt$x)],dt$x[1]),col=2)
   # points(i-dt$y[which.max(dt$y)]*200,median(tmp$LEN_GLF,na.rm=T),pch='-',cex=2)
   xxx <- which.min(abs(dt$x-median(tmp$LEN_GLF,na.rm=T)))
   points(i-dt$y[xxx]*200,median(tmp$LEN_GLF,na.rm=T),pch='_',cex=2)
@@ -780,6 +784,8 @@ for(i in 2010:2019){
 abline(h=c(median(rg_lth_freq_n$LEN_GLF,na.rm=T),18*25.4),
        col=c('gray80',1),lwd=2,lty=5)
 dev.off()
+
+image(2010:2019,dt$x,y_d)
 
 
 ### mean wt/yr
