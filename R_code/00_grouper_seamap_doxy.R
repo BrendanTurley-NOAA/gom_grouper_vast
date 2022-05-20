@@ -82,12 +82,13 @@ ctd_data <- ctd_data[is.element(ctd_data$STATIONID,unique(station$STATIONID)),]
 
 ### ----------------- pull out bottom data from CTD -----------------
 ids <- sort(unique(ctd_data$CTDID))
-bot_do <- bot_temp <- rep(NA,length(ids))
+bot_do <- bot_dos <- bot_temp <- rep(NA,length(ids))
 station_id <- cruise_id <- rep(NA,length(ids))
 n <- 1
 for(i in ids){
   temp <- ctd_data[which(ctd_data$CTDID==i),]
   bot_do[n] <- temp$OXY_MG[which.max(temp$DEPTH)]
+  bot_dos[n] <- temp$OXSAT[which.max(temp$DEPTH)]
   bot_temp[n] <- temp$TEMP[which.max(temp$DEPTH)]
   station_id[n] <- unique(temp$STATIONID)
   cruise_id[n] <- unique(temp$CRUISEID)
@@ -95,6 +96,7 @@ for(i in ids){
 }
 bot_do[which(bot_do>14)] <- NA
 bot_temp[which(bot_temp>40)] <- NA
+bot_dos[which(bot_do!=0 & bot_dos==0)] <- NA
 
 
 ### ----------------- subset species -----------------
@@ -127,7 +129,8 @@ FL_cruises <- FL_cruises[which(FL_cruises$YR>=2010 & grepl('groundfish',FL_cruis
 ### ----------------- merge data for logistic regression -----------------
 grp_do <- data.frame(STATIONID=station_id,
                      CRUISEID=cruise_id,
-                     bot_do=bot_do)
+                     bot_do=bot_do,
+                     bot_dos=bot_dos)
 
 grp <- merge(grp_do,grp_snp,by=c('STATIONID','CRUISEID'),all=T)
 new <- merge(grp,station_redux,by=c('STATIONID','CRUISEID'),all.x=T)
@@ -138,9 +141,12 @@ new <- new[-ind,]
 ### make presence/absence
 new$rg_pr_ab <- ifelse(!is.na(new$rg_cnt),1,0)
 new$rs_pr_ab <- ifelse(!is.na(new$rs_cnt),1,0)
-### cpue
+### cpue by number
 new$rg_cpue <- new$rg_cntexp/new$trawl_hrs
 new$rs_cpue <- new$rs_cntexp/new$trawl_hrs
+### cpue by weight
+new$rg_cpue_wt <- new$rg_wt/new$trawl_hrs
+new$rs_cpue_wt <- new$rs_wt/new$trawl_hrs
 ### water depth
 new <- merge(new,envrec,by=c('STATIONID','CRUISEID'),all.x=T)
 ### which depth
@@ -151,11 +157,21 @@ plot(new$DECSLON,new$DECSLAT,cex=-new$DEPTH_EWTR/100,asp=1)
 new$DEPTH_EMAX <- (-new$DEPTH_EMAX)
 
 
-ind <- c(1:10,18,27:29,33:39,52)
+# ind <- c(1:10,18,27:29,33:39,52)
+ind <- c(1:11,19,28:30,34:40,53) # with bot_dos
 names(new)[ind]
+# [1] "STATIONID"     "CRUISEID"      "bot_do"        "rg_cnt"        "rg_cntexp"     "rg_wt"        
+# [7] "rs_cnt"        "rs_cntexp"     "rs_wt"         "VESSEL.x"      "TEMP_BOT"      "STAT_ZONE"    
+# [13] "DECSLAT"       "DECSLON"       "trawl_hrs"     "AreaSwept_km2" "date"          "rg_pr_ab"     
+# [19] "rs_pr_ab"      "rg_cpue"       "rs_cpue"       "DEPTH_ESRF"  
 grp_snp_cov <- new[,ind]
-ind <- c(2,1,10,17,12:16,22,4:6,18,20,7:9,19,21)
+# ind <- c(2,1,10,17,12:16,22,4:6,18,20,7:9,19,21)
+ind <- c(2,1,11,18,13:17,23,5:7,19,21,8:10,20,22) # with bot_dos
 names(grp_snp_cov)[ind]
+# [1] "CRUISEID"      "STATIONID"     "VESSEL.x"      "date"          "STAT_ZONE"     "DECSLAT"      
+# [7] "DECSLON"       "trawl_hrs"     "AreaSwept_km2" "DEPTH_ESRF"    "rg_cnt"        "rg_cntexp"    
+# [13] "rg_wt"         "rg_pr_ab"      "rg_cpue"       "rs_cnt"        "rs_cntexp"     "rs_wt"        
+# [19] "rs_pr_ab"      "rs_cpue"   
 grp_snp_cov <- grp_snp_cov[,ind]
 vessel_m <- match(grp_snp_cov$VESSEL.x,vessels$VESSELID)
 grp_snp_cov$VESSEL.x <- vessels$NAME[vessel_m]
@@ -184,13 +200,33 @@ b <- barplot(cnts_yr$x,names=cnts_yr$Group.1,
 arrows(b,cnts_yr$x-se_yr$x,b,cnts_yr$x+se_yr$x,angle=90,length=.05,code=3)
 # dev.off()
 
+### proportion of positive stations per year
+pos <- aggregate(new$rg_pr_ab,by=list(year(new$date)),sum,na.rm=T)
+tot <- aggregate(new$rg_pr_ab,by=list(year(new$date)),length)
+barplot(pos$x/tot$x,names=pos$Group.1,ylab='Proportion postive',las=1)
+
+rg_pos <- new[which(new$rg_pr_ab>0),]
+pos_cnt_yr <- aggregate(rg_pos$rg_cpue_wt,by=list(year(rg_pos$date)),mean,na.rm=T)
+pos_se_yr <- aggregate(rg_pos$rg_cpue_wt,by=list(year(rg_pos$date)),std.er,na.rm=T)
+
+b <- barplot(pos_cnt_yr$x,names=pos_cnt_yr$Group.1,
+             las=1,ylim=c(0,6),
+             ylab='Mean cpue (kg/hr) per station',main='Red grouper - SEAMAP trawl')
+arrows(b,pos_cnt_yr$x-pos_se_yr$x,b,pos_cnt_yr$x+pos_se_yr$x,angle=90,length=.05,code=3)
+
+
 
 plot(new$DECSLON,new$DECSLAT,asp=1)
 plot(new$bot_do,new$rg_pr_ab)
+plot(new$bot_dos,new$rg_pr_ab)
 boxplot(new$bot_do[which(new$rg_pr_ab>0)],new$bot_do[which(new$rg_pr_ab==0)])
+boxplot(new$bot_dos[which(new$rg_pr_ab>0)],new$bot_dos[which(new$rg_pr_ab==0)])
 boxplot(new$TEMP_BOT[which(new$rg_pr_ab>0)],new$TEMP_BOT[which(new$rg_pr_ab==0)])
 plot(new$bot_do,new$rg_cntexp)
 plot(new$bot_do,new$rg_cpue)
+plot(new$bot_dos,new$rg_cntexp)
+plot(new$bot_dos,new$rg_cpue_wt)
+plot(new$bot_dos,new$rg_cpue)
 
 plot(new$bot_do,new$rs_pr_ab)
 boxplot(new$bot_do[which(new$rs_pr_ab>0)],new$bot_do[which(new$rs_pr_ab==0)])
@@ -204,7 +240,14 @@ boxplot(new$bot_do[which(new$rg_pr_ab>0)]~
         at=seq(1,20,2),xlim=c(0,20),ylim=c(0,10),lty=1)
 boxplot(new$bot_do[which(new$rg_pr_ab==0)]~
           year(new$date[which(new$rg_pr_ab==0)]),
-        at=seq(2,20,2),add=T,xaxt='n',col=2,lty=1,lwd=2)
+        at=seq(2,20,2),add=T,xaxt='n',col=2,lty=1,lwd=2,yaxt='n')
+
+boxplot(new$bot_dos[which(new$rg_pr_ab>0)]~
+          year(new$date[which(new$rg_pr_ab>0)]),
+        at=seq(1,20,2),xlim=c(0,20),ylim=c(0,150),lty=1)
+boxplot(new$bot_dos[which(new$rg_pr_ab==0)]~
+          year(new$date[which(new$rg_pr_ab==0)]),
+        at=seq(2,20,2),add=T,xaxt='n',col=2,lty=1,lwd=2,yaxt='n')
 
 
 ### bottom DO
@@ -223,6 +266,26 @@ legend('topleft',
        col=c(1,2),lty=1,lwd=2,bty='n')
 abline(v=c(median(new$bot_do[which(new$rg_pr_ab>0)],na.rm=T),
            median(new$bot_do[which(new$rg_pr_ab==0)],na.rm=T)),
+       lty=5,col=c(1,2))
+mtext('Red grouper - SEAMAP trawl')
+# dev.off()
+
+### bottom DO sat
+d1 <- density(new$bot_dos[which(new$rg_pr_ab>0)],na.rm=T)
+d2 <- density(new$bot_dos[which(new$rg_pr_ab==0)],na.rm=T)
+
+# setwd("~/Desktop/professional/projects/Postdoc_FL/figures")
+# png("rg_botdo.png", height = 5, width = 8, units = 'in', res=300)
+plot(d1$x,d1$y,
+     xlim=c(0,150),ylim=c(0,.05),las=1,
+     typ='l',lwd=2,
+     xlab='Bottom dissolved oxygen',ylab='Density')
+points(d2$x,d2$y,typ='l',col=2,lwd=2)
+legend('topleft',
+       c(paste0('Present (n = ',d1$n,')'),paste0('Absent (n = ',d2$n,')')),
+       col=c(1,2),lty=1,lwd=2,bty='n')
+abline(v=c(median(new$bot_dos[which(new$rg_pr_ab>0)],na.rm=T),
+           median(new$bot_dos[which(new$rg_pr_ab==0)],na.rm=T)),
        lty=5,col=c(1,2))
 mtext('Red grouper - SEAMAP trawl')
 # dev.off()
@@ -252,6 +315,9 @@ lines(density(new$TEMP_BOT[which(new$rg_pr_ab==0)],na.rm=T),col=2)
 
 plot(density(new$bot_do[which(new$rs_pr_ab>0)],na.rm=T))
 lines(density(new$bot_do[which(new$rs_pr_ab==0)],na.rm=T),col=2)
+
+plot(density(new$bot_dos[which(new$rs_pr_ab>0)],na.rm=T))
+lines(density(new$bot_dos[which(new$rs_pr_ab==0)],na.rm=T),col=2)
 
 plot(density(new$TEMP_BOT[which(new$rs_pr_ab>0)],na.rm=T))
 lines(density(new$TEMP_BOT[which(new$rs_pr_ab==0)],na.rm=T),col=2)
@@ -668,10 +734,10 @@ ind <- which(lth_freq$BIO_GLF==spcde)
 rs_lth_freq <- lth_freq[ind,]
 rm(lth_freq)
 ### find total weight per station
-# rg_wts <- aggregate(rg_lth_freq$INDVL_WT,by=list(rg_lth_freq$CRUISEID,rg_lth_freq$STATIONID),sum,na.rm=T)
-# names(rg_wts) <- c('CRUISEID','STATIONID','tot_wts')
-# new <- merge(new,rg_wts,by=c('CRUISEID','STATIONID'),all.x=T)
-# plot(new$rg_cnt,new$tot_wts)
+rg_wts <- aggregate(rg_lth_freq$INDVL_WT,by=list(rg_lth_freq$CRUISEID,rg_lth_freq$STATIONID),sum,na.rm=T)
+names(rg_wts) <- c('CRUISEID','STATIONID','tot_wts')
+new3 <- merge(new,rg_wts,by=c('CRUISEID','STATIONID'),all.x=T)
+plot(new3$rg_cnt,new3$tot_wts)
 
 hist(rg_lth_freq$LEN_GLF,breaks=seq(0,900,50),xlab='Length (mm)',main='Red Grouper',las=1)
 abline(v=18*25.4,col=2,lwd=2,lty=5)
@@ -697,9 +763,60 @@ abline(h=c(median(rg_lth_freq_n$LEN_GLF,na.rm=T),18*25.4),
        col=c(1,2),lwd=2,lty=5)
 # dev.off()
 
+setwd("~/Desktop/professional/projects/Postdoc_FL/figures")
+png("rg_lth_freq2.png", height = 5, width = 8, units = 'in', res=300)
+plot(1,1,col='white',xlim=c(2009,2019),ylim=c(0,1000),
+     xlab='Year',ylab='Red grouper length (mm)')
+abline(v=2010:2019,col='gray50')
+for(i in 2010:2019){
+  tmp <- rg_lth_freq_n[which(year(rg_lth_freq_n$date)==i),]
+  dt <- density(tmp$LEN_GLF)
+  points(i-dt$y*200,dt$x,typ='l')
+  polygon(c(i-dt$y*200,i-dt$y[1]*200),c(dt$x,dt$x[1]),col=2)
+  # points(i-dt$y[which.max(dt$y)]*200,median(tmp$LEN_GLF,na.rm=T),pch='-',cex=2)
+  xxx <- which.min(abs(dt$x-median(tmp$LEN_GLF,na.rm=T)))
+  points(i-dt$y[xxx]*200,median(tmp$LEN_GLF,na.rm=T),pch='_',cex=2)
+}
+abline(h=c(median(rg_lth_freq_n$LEN_GLF,na.rm=T),18*25.4),
+       col=c('gray80',1),lwd=2,lty=5)
+dev.off()
+
+
+### mean wt/yr
+rg_lth_freq_n$sz_class <- cut(rg_lth_freq_n$LEN_GLF,breaks=seq(0,1000,200))
+aggregate(rg_lth_freq_n$LEN_GLF,by=list(year(rg_lth_freq_n$date)),mean,na.rm=T)
+
+mwt_sz <- aggregate(rg_lth_freq_n$LEN_GLF,
+                    by=list(year(rg_lth_freq_n$date),rg_lth_freq_n$sz_class),
+                    length)
+
+sz_class <- levels(mwt_sz$Group.2)
+plot(mwt_sz$Group.1,mwt_sz$x,col='white')
+for(i in 1:length(sz_class)){
+  points(mwt_sz$Group.1[which(mwt_sz$Group.2==sz_class[i])],
+         mwt_sz$x[which(mwt_sz$Group.2==sz_class[i])],
+         col=i,typ='b')  
+}
+
 par(mfrow=c(2,1))
 boxplot(rg_lth_freq_n$INDVL_WT~year(rg_lth_freq_n$date))
 boxplot(rg_lth_freq_n$LEN_GLF~year(rg_lth_freq_n$date))
+
+# rg_lth_freq_n$lth_wt <- rg_lth_freq_n$LEN_GLF/rg_lth_freq_n$INDVL_WT/1000
+# aggregate(rg_lth_freq_n$lth_wt,
+#           by=list(year(rg_lth_freq_n$date)),mean,na.rm=T)
+# 
+# mwt_sz <- aggregate(rg_lth_freq_n$lth_wt,
+#                     by=list(year(rg_lth_freq_n$date),rg_lth_freq_n$sz_class),
+#                     mean,na.rm=T)
+# 
+# sz_class <- levels(mwt_sz$Group.2)
+# plot(mwt_sz$Group.1,mwt_sz$x,col='white')
+# for(i in 1:length(sz_class)){
+#   points(mwt_sz$Group.1[which(mwt_sz$Group.2==sz_class[i])],
+#          mwt_sz$x[which(mwt_sz$Group.2==sz_class[i])],
+#          col=i,typ='b')  
+# }
 
 
 plot(rg_lth_freq$LEN_GLF,rg_lth_freq$INDVL_WT,col=year(rg_lth_freq_n$date),log='xy')
@@ -735,12 +852,21 @@ confint2(mod2)
 plot(lth_wt$len,lth_wt$wt,col=lth_wt$year)
 points(preds,lty=1,col=4,typ='l')
 
+
+# setwd("~/Desktop/professional/projects/Postdoc_FL/figures")
+# png("rg_lth_freq.png", height = 5, width = 8, units = 'in', res=300)
+boxplot(resid(mod2)~lth_wt$year,
+        xlab='Year',ylab='Length (mm)',main='Red grouper - SEAMAP trawl',
+        varwidth=T,las=1,lty=1)
+# dev.off()
+
 a_i <- data.frame(a=rep(NA,length(2010:2019)),
                   a_lcl=rep(NA,length(2010:2019)),
                   a_ucl=rep(NA,length(2010:2019)))
 b_i <- data.frame(b=rep(NA,length(2010:2019)),
                   b_lcl=rep(NA,length(2010:2019)),
                   b_ucl=rep(NA,length(2010:2019)))
+resids <- list()
 setwd("~/Desktop/professional/projects/Postdoc_FL/figures")
 # png("rg_len_wt.png", height = 5, width = 10, units = 'in', res=300)
 par(mfrow=c(2,5),mar=c(4,4,1.5,1),oma=c(0,0,2,0))
@@ -759,6 +885,8 @@ for(i in 2010:2019){
     
     preds <- data.frame(len=seq(0,900,5))
     preds$wts <- coef(tmod)[1]*preds$len^coef(tmod)[2]
+    
+    resids[[i-2009]] <- resid(tmod)
     
     plot(lth_wt$len,lth_wt$wt,col='gray80',pch=20,
          xlab='',ylab='')
@@ -806,7 +934,10 @@ axis(1,2010:2019)
 # arrows(2010:2019,b_i$b_lcl,2010:2019,b_i$b_ucl,code=3,angle=90,length=.05)
 dev.off()
 
-
+b <- boxplot(resids[[1]],xlim=c(1,10))
+for(i in 2:10){
+  boxplot(resids[[i]],add=T,at=i)
+}
 
 ### ----------------- catch curve -----------------
 ## VBGM
@@ -846,6 +977,15 @@ for(i in 2010:2019){
   
   plot(temp$age,temp$logcount)
   mtext(i)
+}
+
+
+age_cl <- unique(age_agg$age)
+plot(age_agg$year,age_agg$logcount,col='white')
+for(i in 1:length(age_cl)){
+  points(age_agg$year[which(age_agg$age==age_cl[i])],
+         age_agg$logcount[which(age_agg$age==age_cl[i])],
+         col=i,typ='b')  
 }
 
 setwd("~/Desktop/professional/projects/Postdoc_FL/figures")
